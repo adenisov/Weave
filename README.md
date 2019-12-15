@@ -1,2 +1,2 @@
 # Weave
-The missing event-driven for .NET
+The missing event-driven framework for .NET
