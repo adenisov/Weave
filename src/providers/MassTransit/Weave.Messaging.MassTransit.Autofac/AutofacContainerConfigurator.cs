@@ -2,23 +2,34 @@ using System;
 using System.Linq;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Autofac;
+using MassTransit;
 
 namespace Weave.Messaging.MassTransit.Autofac
 {
     public sealed class AutofacContainerConfigurator : IContainerConfigurator
     {
         private readonly ContainerBuilder _containerBuilder;
+        private readonly MassTransitRegistrationProfile _registrationProfile;
+
         private IContainer _container;
 
         public AutofacContainerConfigurator(ContainerBuilder containerBuilder)
+            : this(containerBuilder, new MassTransitRegistrationProfile())
+        {
+        }
+
+        private AutofacContainerConfigurator(ContainerBuilder containerBuilder, MassTransitRegistrationProfile registrationProfile)
         {
             _containerBuilder = containerBuilder;
+            _registrationProfile = registrationProfile;
         }
 
         public void Configure(IMassTransitEndpointLifecycle lifecycle)
         {
-            lifecycle.EmitContainerProvided(RegisterService);
-            lifecycle.MessageBusStarting += OnMessageBusStarting;
+            _containerBuilder.RegisterBuildCallback(c => _container = c);
+            _containerBuilder.AddMassTransit(c => { c.Builder.RegisterModule(_registrationProfile); });
+
+            lifecycle.EmitContainerProvided(RegisterService, RegisterInstance);
         }
 
         public Func<IServiceFactory> GetServiceFactoryProvider()
@@ -36,14 +47,32 @@ namespace Weave.Messaging.MassTransit.Autofac
             return ServiceFactoryProvider;
         }
 
-        private void OnMessageBusStarting(object sender, EventArgs e)
-        {
-            _container = _containerBuilder.Build();
-        }
-
         private void RegisterService(RegistrationBuilder builder)
         {
-            _containerBuilder.RegisterType(builder.Type).As(builder.Registrations.ToArray());
+            var registrationBuilder = _containerBuilder
+                .RegisterType(builder.Type)
+                .As(builder.Registrations.ToArray());
+
+            switch (builder.LifetimeScope)
+            {
+                case LifetimeScope.Transient:
+                case LifetimeScope.Dependency:
+                    registrationBuilder.InstancePerDependency();
+                    break;
+                case LifetimeScope.ParentScope:
+                    registrationBuilder.InstancePerLifetimeScope();
+                    break;
+                case LifetimeScope.Shared:
+                    registrationBuilder.SingleInstance();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(builder.LifetimeScope));
+            }
+        }
+
+        private void RegisterInstance(IInstanceRegistrationSource registrationSource)
+        {
+            registrationSource.Register(new AutofacInstanceRegistration(_containerBuilder, registrationSource));
         }
     }
 }

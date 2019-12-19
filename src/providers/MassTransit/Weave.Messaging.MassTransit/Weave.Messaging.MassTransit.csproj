@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Autofac" Version="4.9.4" />
+        <PackageReference Include="MassTransit" Version="$(MassTransitVersion)" />
+        <PackageReference Include="MassTransit.RabbitMQ" Version="$(MassTransitVersion)" />
+        <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\Weave.Messaging.Cmt.UseCases\Weave.Messaging.Cmt.UseCases.csproj" />
+        <ProjectReference Include="..\..\..\..\Weave.Messaging.Debug.UseCases\Weave.Messaging.Debug.UseCases.csproj" />
+        <ProjectReference Include="..\..\..\..\Weave.Messaging.Zazzle.UseCases\Weave.Messaging.Zazzle.UseCases.csproj" />
+        <ProjectReference Include="..\..\..\Weave.Messaging.Core\Weave.Messaging.Core.csproj" />
+    </ItemGroup>
+
+</Project>

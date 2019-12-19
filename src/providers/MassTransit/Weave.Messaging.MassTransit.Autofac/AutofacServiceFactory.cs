@@ -8,7 +8,7 @@ namespace Weave.Messaging.MassTransit.Autofac
     /// <summary>
     /// 
     /// </summary>
-    public sealed class AutofacServiceFactory : IServiceFactory
+    internal sealed class AutofacServiceFactory : IServiceFactory
     {
         private readonly ILifetimeScope _lifetimeScope;
 

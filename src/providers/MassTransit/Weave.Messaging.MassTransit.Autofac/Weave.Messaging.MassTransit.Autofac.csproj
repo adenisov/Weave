@@ -8,4 +8,8 @@
       <ProjectReference Include="..\Weave.Messaging.MassTransit\Weave.Messaging.MassTransit.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MassTransit.Autofac" Version="$(MassTransitVersion)" />
+    </ItemGroup>
+
 </Project>

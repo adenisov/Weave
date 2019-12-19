@@ -50,7 +50,7 @@ namespace Weave.Messaging.Core
 
         public void RegisterSagas(ISagaConfiguration sagaConfiguration)
         {
-            Load(_builderFactory.Value);
+            LoadInternal();
 
             foreach (var sagaType in _builderFactory.Value.SagaTypes)
             {
