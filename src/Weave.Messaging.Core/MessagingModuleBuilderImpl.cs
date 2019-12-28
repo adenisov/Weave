@@ -30,10 +30,6 @@ namespace Weave.Messaging.Core
             {
                 EventHandlerTypes.Add(handlerType);
             }
-            else if (handlerType.IsSagaType())
-            {
-                SagaTypes.Add(handlerType);
-            }
             else
             {
                 throw new InvalidOperationException("");
@@ -44,7 +40,7 @@ namespace Weave.Messaging.Core
         public void WithSaga<TSaga>() where TSaga : ISaga
 #pragma warning restore 618
         {
-            // ToDo: register sagas
+            SagaTypes.Add(typeof(TSaga));
         }
     }
 }

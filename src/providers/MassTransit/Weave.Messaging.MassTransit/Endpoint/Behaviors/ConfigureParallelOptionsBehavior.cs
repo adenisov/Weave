@@ -1,5 +1,6 @@
 using System;
 using GreenPipes;
+using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors

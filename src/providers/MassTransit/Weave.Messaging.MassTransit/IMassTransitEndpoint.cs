@@ -20,8 +20,8 @@ namespace Weave.Messaging.MassTransit
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="busConfigurationAction"></param>
-        void Configure(Action<IBusFactoryConfigurator> busConfigurationAction = null);
+        /// <param name="postConfigurationAction"></param>
+        void Configure(Action<IBusFactoryConfigurator> postConfigurationAction = null);
         
         /// <summary>
         /// 

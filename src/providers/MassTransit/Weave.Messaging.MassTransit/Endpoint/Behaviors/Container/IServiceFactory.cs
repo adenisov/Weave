@@ -19,9 +19,9 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="t"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
-        object GetService(Type t);
+        object GetService(Type type);
 
         /// <summary>
         /// 

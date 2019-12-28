@@ -5,14 +5,11 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events
 {
     public sealed class ContainerRegisteredEventArgs
     {
-        public ContainerRegisteredEventArgs(Action<RegistrationBuilder> builder, Action<IInstanceRegistrationSource> instanceBuilder)
+        public ContainerRegisteredEventArgs(Action<IContainerRegistar> registar)
         {
-            Builder = builder;
-            InstanceBuilder = instanceBuilder;
+            Registar = registar;
         }
 
-        public Action<RegistrationBuilder> Builder { get; }
-
-        public Action<IInstanceRegistrationSource> InstanceBuilder { get; }
+        public Action<IContainerRegistar> Registar { get; }
     }
 }

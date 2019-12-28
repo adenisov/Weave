@@ -1,4 +1,5 @@
 using System;
+using MassTransit;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 
 namespace Weave.Messaging.MassTransit
@@ -11,13 +12,19 @@ namespace Weave.Messaging.MassTransit
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="lifecycle"></param>
-        void Configure(IMassTransitEndpointLifecycle lifecycle);
+        /// <param name="busConfigureFactory"></param>
+        void Configure(Func<IBusControl> busConfigureFactory);
 
         /// <summary>
         /// 
         /// </summary>
-        /// <returns></returns>
-        Func<IServiceFactory> GetServiceFactoryProvider();
+        /// <value></value>
+        Func<IServiceFactory> ServiceFactoryProvider { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        IContainerRegistration ContainerRegistration { get; }
     }
 }

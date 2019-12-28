@@ -86,7 +86,15 @@ namespace Weave.Messaging.Core
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryMessage<,>))
                 .Select(i => i.GetGenericArguments().Last()).First();
         }
-        
+
+        public static bool HasResponseMessage(this Type type)
+        {
+            return type
+                .GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryMessage<,>) ||
+                          i.GetGenericTypeDefinition() == typeof(ICommandMessage<,>));
+        }
+
         public static Type GetResponseMessage2(this Type type)
         {
             return type.GetInterfaces()

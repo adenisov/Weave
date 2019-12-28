@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using JetBrains.Annotations;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 using MassTransit;
 using MassTransit.RabbitMqTransport;
 using Weave.Messaging.Core;
-using Weave.Messaging.Debug.UseCases;
+using Weave.Messaging.Debug.UseCases.Saga;
+using Weave.Messaging.MassTransit.Consumers;
+using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
 {
@@ -38,10 +42,11 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         private readonly ICollection<RegisteredMessageHandler> _registeredQueryHandlers = new HashSet<RegisteredMessageHandler>();
         private readonly ICollection<RegisteredMessageHandler> _registeredCommandHandlers = new HashSet<RegisteredMessageHandler>();
         private readonly ICollection<RegisteredMessageHandler> _registeredEventHandlers = new HashSet<RegisteredMessageHandler>();
+        private readonly ICollection<Type> _registeredSagas = new HashSet<Type>();
 
-        private IRabbitMqHost _rabbitMqHost;
-        private Func<IServiceFactory> _serviceFactoryProvider;
-        private Action<RegistrationBuilder> _registrationBuilder;
+        private IRabbitMqHost _host;
+        private IRabbitMqBusFactoryConfigurator _configurator;
+        private Action<IContainerRegistar> _containerRegistar;
 
         public RegisterMessageHandlersExtension(
             RabbitMqHostSettings rabbitMqHostSettings,
@@ -58,30 +63,25 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
             endpointLifecycle.QueryHandlerRegistered += OnQueryHandlerRegistered;
             endpointLifecycle.CommandHandlerRegistered += OnCommandHandlerRegistered;
             endpointLifecycle.EventHandlerRegistered += OnEventHandlerRegistered;
-            endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
+            endpointLifecycle.SagaRegistered += OnSagaRegistered;
             endpointLifecycle.ContainerRegistered += OnContainerRegistered;
-            endpointLifecycle.ServiceFactoryConfigured += OnServiceLocatorConfigured;
+            endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
         }
 
         private void OnContainerRegistered(object sender, ContainerRegisteredEventArgs e)
         {
-            _registrationBuilder = e.Builder;
+            _containerRegistar = e.Registar;
         }
 
-        private void OnServiceLocatorConfigured(object sender, ServiceFactoryConfiguredEventArgs e)
+        private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e)
         {
-            _serviceFactoryProvider = e.ServiceFactoryProvider;
-        }
+            _configurator = (IRabbitMqBusFactoryConfigurator) e.Configurator;
+            _host = CreateHost(_configurator);
 
-        private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs messageBusConfiguringEventArgs)
-        {
-            var configurator = (IRabbitMqBusFactoryConfigurator) messageBusConfiguringEventArgs.Configurator;
-
-            _rabbitMqHost = CreateHost(configurator);
-
-            RegisterQueryHandlers(configurator, _registeredQueryHandlers);
-            RegisterCommandHandlers(configurator, _registeredCommandHandlers);
-            RegisterEventHandlers(configurator, _registeredEventHandlers);
+            RegisterQueryHandlers(_registeredQueryHandlers);
+            RegisterCommandHandlers(_registeredCommandHandlers);
+            RegisterEventHandlers(_registeredEventHandlers);
+            RegisterSagas(_registeredSagas);
         }
 
         private IRabbitMqHost CreateHost(IRabbitMqBusFactoryConfigurator configurator)
@@ -96,86 +96,95 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                 });
         }
 
-        private void RegisterQueryHandlers(IRabbitMqBusFactoryConfigurator configurator, IEnumerable<RegisteredMessageHandler> handlers)
+        private void RegisterQueryHandlers(IEnumerable<RegisteredMessageHandler> handlers)
         {
             foreach (var queryHandler in handlers)
             {
                 var messageType = queryHandler.MessageType;
 
-                var handlerAdapter = typeof(QueryHandlerConsumerAdapter<,,>).MakeGenericType(
+                var handlerAdapterType = typeof(QueryHandlerConsumerAdapter<,,>).MakeGenericType(
                     queryHandler.HandlerType,
                     messageType,
                     messageType.GetResponseMessage());
 
-                RegisterMessageHandler(
-                    configurator,
-                    queryHandler,
-                    _rabbitMqTopology.GetRemoteMessageAddress(messageType),
-                    _topologyFeaturesConfiguration.DirectInputSettings,
-                    handlerAdapter);
+                RegisterMessageHandler(handlerAdapterType, queryHandler, _topologyFeaturesConfiguration.DirectInputSettings);
             }
         }
 
-        private void RegisterCommandHandlers(IRabbitMqBusFactoryConfigurator configurator, IEnumerable<RegisteredMessageHandler> handlers)
+        private void RegisterCommandHandlers(IEnumerable<RegisteredMessageHandler> handlers)
         {
             foreach (var commandHandler in handlers)
             {
                 var messageType = commandHandler.MessageType;
 
-                Type handlerAdapter;
-                if (messageType == typeof(TestCommand))
+                Type handlerAdapterType;
+                if (messageType.HasResponseMessage())
                 {
-                    handlerAdapter = typeof(CommandHandlerConsumerAdapter<,>).MakeGenericType(
+                    handlerAdapterType = typeof(CommandHandlerConsumerAdapter<,>).MakeGenericType(
                         commandHandler.HandlerType,
                         messageType);
                 }
                 else
                 {
-                    handlerAdapter = typeof(CommandHandlerConsumerAdapter<,,>).MakeGenericType(
+                    handlerAdapterType = typeof(CommandHandlerConsumerAdapter<,,>).MakeGenericType(
                         commandHandler.HandlerType,
                         messageType,
                         messageType.GetResponseMessage2());
                 }
 
-                RegisterMessageHandler(
-                    configurator,
-                    commandHandler,
-                    _rabbitMqTopology.GetRemoteMessageAddress(messageType),
-                    _topologyFeaturesConfiguration.DirectInputSettings,
-                    handlerAdapter);
+                RegisterMessageHandler(handlerAdapterType, commandHandler, _topologyFeaturesConfiguration.DirectInputSettings);
             }
         }
 
-        private void RegisterEventHandlers(IRabbitMqBusFactoryConfigurator configurator, IEnumerable<RegisteredMessageHandler> handlers)
+        private void RegisterEventHandlers(IEnumerable<RegisteredMessageHandler> handlers)
         {
             foreach (var eventHandler in handlers)
             {
                 var messageType = eventHandler.MessageType;
 
-                var handlerAdapter = typeof(EventHandlerConsumerAdapter<,>).MakeGenericType(
+                var handlerAdapterType = typeof(EventHandlerConsumerAdapter<,>).MakeGenericType(
                     eventHandler.HandlerType,
                     messageType);
 
-                RegisterMessageHandler(
-                    configurator,
-                    eventHandler,
-                    _rabbitMqTopology.GetRemoteMessageAddress(messageType),
-                    _topologyFeaturesConfiguration.PublishSettings,
-                    handlerAdapter);
+                RegisterMessageHandler(handlerAdapterType, eventHandler, _topologyFeaturesConfiguration.PublishSettings);
             }
         }
 
-        private void RegisterMessageHandler(
-            IRabbitMqBusFactoryConfigurator configurator,
-            RegisteredMessageHandler handler,
-            MessageAddress address,
-            InputSettings inputSettings,
-            Type handlerAdapterType)
+        private void RegisterSagas(IEnumerable<Type> sagas)
+        {
+            foreach (var sagaType in sagas)
+            {
+                _configurator.ReceiveEndpoint(
+                    _host,
+                    _rabbitMqTopology.GetLocalInputQueueName(sagaType),
+                    c =>
+                    {
+                        _containerRegistar(
+                            SagaRegistrationFactory
+                                .ForSaga<OrderSagaData>()
+                                .WithReceiveEndpointConfiguration(c));
+                    });
+            }
+        }
+
+        private void RegisterMessageHandler(Type handlerType, RegisteredMessageHandler handler, InputSettings inputSettings)
+        {
+            // ReSharper disable once PossibleNullReferenceException
+            var method = typeof(RegisterMessageHandlersExtension)
+                .GetMethod(nameof(RegisterMessageConsumer), BindingFlags.Instance | BindingFlags.NonPublic)
+                .MakeGenericMethod(handlerType);
+
+            method.Invoke(this, new object[] { handler, inputSettings });
+        }
+
+        [UsedImplicitly]
+        private void RegisterMessageConsumer<TConsumer>(RegisteredMessageHandler handler, InputSettings inputSettings)
+            where TConsumer : class, IConsumer
         {
             var messageType = handler.MessageType;
 
-            configurator.ReceiveEndpoint(
-                _rabbitMqHost,
+            _configurator.ReceiveEndpoint(
+                _host,
                 _rabbitMqTopology.GetLocalInputQueueName(messageType),
                 c =>
                 {
@@ -185,6 +194,8 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                     c.QueueExpiration = inputSettings.Ttl;
                     c.PrefetchCount = (ushort) inputSettings.PrefetchCount;
 
+                    // ReSharper disable once HeapView.ClosureAllocation
+                    var address = _rabbitMqTopology.GetRemoteMessageAddress(messageType);
                     c.Bind(address.ExchangeName, e =>
                     {
                         e.AutoDelete = false;
@@ -193,13 +204,10 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                         e.RoutingKey = address.RoutingKey;
                     });
 
-                    c.Consumer(handlerAdapterType, t => _serviceFactoryProvider().GetService(t));
-
-                    _registrationBuilder(
-                        RegistrationBuilder
-                            .RegisterType(handlerAdapterType)
-                            .AsSelf()
-                            .PerNestedLifetimeScope());
+                    _containerRegistar(
+                        ConsumerRegistrationFactory
+                            .ForConsumer<TConsumer>()
+                            .WithReceiveEndpointConfiguration(c));
                 });
         }
 
@@ -219,6 +227,11 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         {
             _registeredEventHandlers.Add(new RegisteredMessageHandler(eventArgs.MessageType,
                 eventArgs.MessageHandlerType));
+        }
+
+        private void OnSagaRegistered(object sender, SagaRegisteredEventArgs e)
+        {
+            _registeredSagas.Add(e.SagaType);
         }
     }
 }

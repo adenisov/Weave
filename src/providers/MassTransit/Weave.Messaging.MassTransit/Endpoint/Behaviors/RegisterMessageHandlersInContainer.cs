@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 using Weave.Messaging.Core;
+using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
 {
@@ -10,7 +11,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
     {
         private readonly ICollection<Type> _messageHandlerTypes = new HashSet<Type>();
 
-        private Action<RegistrationBuilder> _registrationBuilder;
+        private Action<IContainerRegistar> _registrationBuilder;
 
         public void Attach(IMassTransitEndpointLifecycle endpointLifecycle)
         {
@@ -24,13 +25,14 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
         private void OnMessageBusConfigured(object sender, MessageBusConfiguredEventArgs e)
         {
             // ToDo: consider registering consumer adapters here as well, because they are part of MassTransit ecosystem.
+            // ToDo: register before container is built
             _messageHandlerTypes.ForEach(t =>
                 _registrationBuilder(RegistrationBuilder.RegisterType(t).AsSelf()));
         }
 
         private void OnContainerRegistered(object sender, ContainerRegisteredEventArgs e)
         {
-            _registrationBuilder = e.Builder;
+            _registrationBuilder = e.Registar;
         }
 
         private void OnQueryHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs e)

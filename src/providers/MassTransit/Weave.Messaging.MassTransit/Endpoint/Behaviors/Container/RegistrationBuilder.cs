@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
 {
-    public sealed class RegistrationBuilder
+    public sealed class RegistrationBuilder : IContainerRegistar
     {
         private readonly Type _type;
         private readonly ICollection<Type> _as = new HashSet<Type>();
@@ -112,5 +112,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
         /// <param name="t"></param>
         /// <returns></returns>
         public static RegistrationBuilder RegisterType(Type t) => new RegistrationBuilder(t);
+
+        public void Register(IContainerRegistration registar) => registar.Register(this);
     }
 }

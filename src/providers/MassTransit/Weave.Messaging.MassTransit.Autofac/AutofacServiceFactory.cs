@@ -22,7 +22,7 @@ namespace Weave.Messaging.MassTransit.Autofac
             return string.IsNullOrEmpty(name) ? _lifetimeScope.Resolve<T>() : _lifetimeScope.ResolveNamed<T>(name);
         }
 
-        public object GetService(Type t) => _lifetimeScope.Resolve(t);
+        public object GetService(Type type) => _lifetimeScope.Resolve(type);
 
         public IEnumerable<T> GetServices<T>() => _lifetimeScope.Resolve<IEnumerable<T>>();
 

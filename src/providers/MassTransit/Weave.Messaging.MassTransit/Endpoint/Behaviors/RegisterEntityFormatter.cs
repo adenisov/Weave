@@ -1,6 +1,7 @@
 using System;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 using MassTransit.Topology;
+using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
 {

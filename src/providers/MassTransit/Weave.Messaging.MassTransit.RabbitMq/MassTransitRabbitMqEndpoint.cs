@@ -10,7 +10,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         {
         }
 
-        protected override Func<Action<IBusFactoryConfigurator>, IBusControl> ConfigureFactory =>
-            configure => Bus.Factory.CreateUsingRabbitMq(configure);
+        protected override Func<IBusControl> GetConfigureFactory(Action<IBusFactoryConfigurator> configurator) =>
+            () => Bus.Factory.CreateUsingRabbitMq(configurator);
     }
 }

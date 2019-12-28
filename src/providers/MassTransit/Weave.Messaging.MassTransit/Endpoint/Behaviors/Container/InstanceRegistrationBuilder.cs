@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
 {
-    public sealed class InstanceRegistrationBuilder<T> : IInstanceRegistrationSource
+    public sealed class InstanceRegistrationBuilder<T> : IInstanceRegistrationSource<T>
         where T : class
     {
         private readonly ICollection<Type> _as = new HashSet<Type>();
@@ -48,7 +48,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
         /// 
         /// </summary>
         /// <param name="registar"></param>
-        public void Register(IInstanceRegistration registar) => registar.Register(Instance);
+        public void Register(IContainerRegistration registar) => registar.Register(this);
 
         /// <summary>
         /// 

@@ -11,8 +11,6 @@
     </ItemGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\..\..\..\Weave.Messaging.Debug.UseCases\Weave.Messaging.Debug.UseCases.csproj" />
-      <ProjectReference Include="..\..\..\..\Weave.Messaging.Zazzle.UseCases\Weave.Messaging.Zazzle.UseCases.csproj" />
       <ProjectReference Include="..\Weave.Messaging.MassTransit\Weave.Messaging.MassTransit.csproj" />
     </ItemGroup>
     

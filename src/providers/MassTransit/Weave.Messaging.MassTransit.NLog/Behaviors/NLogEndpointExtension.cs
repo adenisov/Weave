@@ -1,5 +1,6 @@
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 using MassTransit.NLogIntegration;
+using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit.NLog.Behaviors
 {

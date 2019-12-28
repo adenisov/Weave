@@ -1,10 +1,9 @@
 using System;
+using MassTransit;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
-using MassTransit;
-using MassTransit.RabbitMqTransport;
 
-namespace Weave.Messaging.MassTransit
+namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
 {
     /// <summary>
     /// 
@@ -25,6 +24,11 @@ namespace Weave.Messaging.MassTransit
         /// 
         /// </summary>
         event EventHandler<MessageHandlerRegisteredEventArgs> EventHandlerRegistered;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        event EventHandler<SagaRegisteredEventArgs> SagaRegistered; 
 
         /// <summary>
         /// 
@@ -75,8 +79,7 @@ namespace Weave.Messaging.MassTransit
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="nativeBus"></param>
-        void EmitMessageBusConfigured(IBusControl nativeBus);
+        void EmitMessageBusConfigured();
 
         /// <summary>
         /// 
@@ -102,6 +105,12 @@ namespace Weave.Messaging.MassTransit
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="sagaType"></param>
+        void EmitSagaRegistered(Type sagaType);
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="nativeBus"></param>
         /// <param name="bus"></param>
         void EmitMessageBusStarted(IBusControl nativeBus, IMassTransitMessageBus bus);
@@ -115,9 +124,8 @@ namespace Weave.Messaging.MassTransit
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="instanceBuilder"></param>
-        void EmitContainerProvided(Action<RegistrationBuilder> builder, Action<IInstanceRegistrationSource> instanceBuilder);
+        /// <param name="registar"></param>
+        void EmitContainerProvided(Action<IContainerRegistar> registar);
 
         /// <summary>
         /// 

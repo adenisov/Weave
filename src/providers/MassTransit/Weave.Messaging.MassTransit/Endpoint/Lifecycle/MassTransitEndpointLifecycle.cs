@@ -5,7 +5,7 @@ using MassTransit;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
 {
-    internal sealed class MassTransitEndpointLifecycleImpl : IMassTransitEndpointLifecycle
+    internal sealed class MassTransitEndpointLifecycle : IMassTransitEndpointLifecycle
     {
         public event EventHandler<ContainerRegisteredEventArgs> ContainerRegistered;
         public event EventHandler<ServiceFactoryConfiguredEventArgs> ServiceFactoryConfigured;
@@ -15,6 +15,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         public event EventHandler<MessageHandlerRegisteredEventArgs> QueryHandlerRegistered;
         public event EventHandler<MessageHandlerRegisteredEventArgs> CommandHandlerRegistered;
         public event EventHandler<MessageHandlerRegisteredEventArgs> EventHandlerRegistered;
+        public event EventHandler<SagaRegisteredEventArgs> SagaRegistered;
         public event EventHandler<MessageBusStartingEventArgs> MessageBusStarting;
         public event EventHandler MessageBusStopping;
         public event EventHandler MessageBusStopped;
@@ -24,9 +25,9 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
             MessageBusConfiguring?.Invoke(this, new MessageBusConfiguringEventArgs(configurator));
         }
 
-        public void EmitMessageBusConfigured(IBusControl nativeBus)
+        public void EmitMessageBusConfigured()
         {
-            MessageBusConfigured?.Invoke(this, new MessageBusConfiguredEventArgs(nativeBus));
+            MessageBusConfigured?.Invoke(this, new MessageBusConfiguredEventArgs());
         }
 
         public void EmitQueryHandlerRegistered(Type messageType, Type messageHandlerType)
@@ -44,6 +45,11 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
             EventHandlerRegistered?.Invoke(this, new MessageHandlerRegisteredEventArgs(messageType, messageHandlerType));
         }
 
+        public void EmitSagaRegistered(Type sagaType)
+        {
+            SagaRegistered?.Invoke(this, new SagaRegisteredEventArgs(sagaType));
+        }
+
         public void EmitMessageBusStarted(IBusControl nativeBus, IMassTransitMessageBus bus)
         {
             MessageBusStarted?.Invoke(this, new MessageBusStartedEventArgs(nativeBus, bus));
@@ -54,9 +60,9 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
             MessageBusStarting?.Invoke(this, new MessageBusStartingEventArgs(busControl));
         }
 
-        public void EmitContainerProvided(Action<RegistrationBuilder> builder, Action<IInstanceRegistrationSource> instanceBuilder)
+        public void EmitContainerProvided(Action<IContainerRegistar> registar)
         {
-            ContainerRegistered?.Invoke(this, new ContainerRegisteredEventArgs(builder, instanceBuilder));
+            ContainerRegistered?.Invoke(this, new ContainerRegisteredEventArgs(registar));
         }
 
         public void EmitServiceFactoryConfigured(Func<IServiceFactory> serviceFactoryProvider)
