@@ -8,7 +8,7 @@ namespace Weave.Messaging.Core.Commands
     /// 
     /// </summary>
     [Obsolete("This is just a marker interface. It shouldn't be implemented.")]
-    public interface ICommandHandler
+    public interface ICommandHandler : IMessageHandler
     {
     }
 

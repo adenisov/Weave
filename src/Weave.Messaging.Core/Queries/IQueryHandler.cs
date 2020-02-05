@@ -8,7 +8,7 @@ namespace Weave.Messaging.Core.Queries
     /// 
     /// </summary>
     [Obsolete("This is just a marker interface. It shouldn't be implemented.")]
-    public interface IQueryHandler
+    public interface IQueryHandler : IMessageHandler
     {
     }
 

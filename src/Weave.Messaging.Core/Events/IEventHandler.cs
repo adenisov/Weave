@@ -8,7 +8,7 @@ namespace Weave.Messaging.Core.Events
     /// 
     /// </summary>
     [Obsolete("This is just a marker interface. It shouldn't be implemented.")]
-    public interface IEventHandler
+    public interface IEventHandler : IMessageHandler
     {
     }
 
