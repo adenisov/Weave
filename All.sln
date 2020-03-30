@@ -1,6 +1,8 @@
 ﻿Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0FECDE36-0BFA-45D4-B244-9CD97B8B713D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D0CD456A-E32E-439F-BB9A-1CB51A68043A}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.Core", "src\Weave.Messaging.Core\Weave.Messaging.Core.csproj", "{A9070AA4-4943-4E51-8E14-34104496D2E4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{4E4F2659-FEFF-4A05-A4BF-9FF217221065}"
@@ -13,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "providers\Weave.Messaging.M
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "providers", "providers", "{8E1BC3A3-7122-4D78-89D9-37B740645D03}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.Debug", "Weave.Messaging.Debug\Weave.Messaging.Debug.csproj", "{02E68697-DCD3-4611-915F-148994E1ABD4}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MassTransit", "MassTransit", "{0FF73F11-2656-4405-AB9B-0F6F150A2E6E}"
 ProjectSection(SolutionItems) = preProject
 	src\providers\MassTransit\Directory.Build.props = src\providers\MassTransit\Directory.Build.props
@@ -24,9 +24,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.MassTransit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.MassTransit.RabbitMq", "src\providers\MassTransit\Weave.Messaging.MassTransit.RabbitMq\Weave.Messaging.MassTransit.RabbitMq.csproj", "{1D8717A0-FEAD-47AD-836A-72657F1433AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.Debug.UseCases", "Weave.Messaging.Debug.UseCases\Weave.Messaging.Debug.UseCases.csproj", "{E2A70CF5-9BAE-4E53-822D-5459E14F420C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.MassTransit.Autofac", "src\providers\MassTransit\Weave.Messaging.MassTransit.Autofac\Weave.Messaging.MassTransit.Autofac.csproj", "{D641DA20-1BE6-4BEA-948B-3A54D28AD4F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.MassTransit.MongoDb", "src\providers\MassTransit\Weave.Messaging.MassTransit.MongoDb\Weave.Messaging.MassTransit.MongoDb.csproj", "{13666C6D-9F06-43AE-9C07-E844A32F6077}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +41,7 @@ Global
 		{7B0758A9-68F0-4AFD-933F-494BA0D763F4} = {0FF73F11-2656-4405-AB9B-0F6F150A2E6E}
 		{1D8717A0-FEAD-47AD-836A-72657F1433AA} = {0FF73F11-2656-4405-AB9B-0F6F150A2E6E}
 		{D641DA20-1BE6-4BEA-948B-3A54D28AD4F6} = {0FF73F11-2656-4405-AB9B-0F6F150A2E6E}
+		{13666C6D-9F06-43AE-9C07-E844A32F6077} = {0FF73F11-2656-4405-AB9B-0F6F150A2E6E}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A9070AA4-4943-4E51-8E14-34104496D2E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -51,10 +52,6 @@ Global
 		{68A332AF-3519-4C68-8BF6-B27C5BDFF9FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68A332AF-3519-4C68-8BF6-B27C5BDFF9FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68A332AF-3519-4C68-8BF6-B27C5BDFF9FF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02E68697-DCD3-4611-915F-148994E1ABD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02E68697-DCD3-4611-915F-148994E1ABD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02E68697-DCD3-4611-915F-148994E1ABD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02E68697-DCD3-4611-915F-148994E1ABD4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7B0758A9-68F0-4AFD-933F-494BA0D763F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7B0758A9-68F0-4AFD-933F-494BA0D763F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7B0758A9-68F0-4AFD-933F-494BA0D763F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -63,13 +60,13 @@ Global
 		{1D8717A0-FEAD-47AD-836A-72657F1433AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D8717A0-FEAD-47AD-836A-72657F1433AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D8717A0-FEAD-47AD-836A-72657F1433AA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2A70CF5-9BAE-4E53-822D-5459E14F420C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2A70CF5-9BAE-4E53-822D-5459E14F420C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2A70CF5-9BAE-4E53-822D-5459E14F420C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2A70CF5-9BAE-4E53-822D-5459E14F420C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D641DA20-1BE6-4BEA-948B-3A54D28AD4F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D641DA20-1BE6-4BEA-948B-3A54D28AD4F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D641DA20-1BE6-4BEA-948B-3A54D28AD4F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D641DA20-1BE6-4BEA-948B-3A54D28AD4F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13666C6D-9F06-43AE-9C07-E844A32F6077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13666C6D-9F06-43AE-9C07-E844A32F6077}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13666C6D-9F06-43AE-9C07-E844A32F6077}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13666C6D-9F06-43AE-9C07-E844A32F6077}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
