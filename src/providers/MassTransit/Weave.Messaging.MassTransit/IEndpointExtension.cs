@@ -7,6 +7,10 @@ namespace Weave.Messaging.MassTransit
     /// </summary>
     public interface IEndpointExtension
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="endpointLifecycle"></param>
         void Attach(IMassTransitEndpointLifecycle endpointLifecycle);
     }
 }

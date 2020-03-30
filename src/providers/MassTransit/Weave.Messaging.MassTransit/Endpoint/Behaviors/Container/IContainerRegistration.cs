@@ -1,5 +1,6 @@
 using Automatonymous;
 using MassTransit;
+using ISaga = MassTransit.Saga.ISaga;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
 {
@@ -25,17 +26,25 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="consumerRegistrationBuilder"></param>
+        /// <param name="builder"></param>
         /// <typeparam name="TConsumer"></typeparam>
-        void Register<TConsumer>(IConsumerRegistrationBuilder<TConsumer> consumerRegistrationBuilder)
+        void Register<TConsumer>(IConsumerRegistrationBuilder<TConsumer> builder)
             where TConsumer : class, IConsumer;
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sagaRegistrationBuilder"></param>
+        /// <param name="builder"></param>
         /// <typeparam name="TSagaInstance"></typeparam>
-        void Register<TSagaInstance>(ISagaRegistrationBuilder<TSagaInstance> sagaRegistrationBuilder)
+        void Register<TSagaInstance>(IStateMachineSagaRegistrationBuilder<TSagaInstance> builder) 
             where TSagaInstance : class, SagaStateMachineInstance;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <typeparam name="TSaga"></typeparam>
+        void Register<TSaga>(ISagaRegistrationBuilder<TSaga> builder)
+            where TSaga : class, ISaga;
     }
 }

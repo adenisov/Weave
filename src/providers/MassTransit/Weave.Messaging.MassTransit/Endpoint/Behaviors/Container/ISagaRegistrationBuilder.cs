@@ -1,14 +1,22 @@
-using Automatonymous;
 using MassTransit;
+using MassTransit.Saga;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
 {
-    public interface ISagaRegistrationBuilder<TSagaInstance> : IContainerRegistar
-        where TSagaInstance : class, SagaStateMachineInstance
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TSaga"></typeparam>
+    public interface ISagaRegistrationBuilder<TSaga> : IReceiveEndpointConfiguration, IContainerRegistar
+        where TSaga : ISaga
     {
-        IReceiveEndpointConfigurator Configurator { get; }
-
-        ISagaRegistrationBuilder<TSagaInstance> WithReceiveEndpointConfiguration<TConfigurator>(TConfigurator configurator)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="configurator"></param>
+        /// <typeparam name="TConfigurator"></typeparam>
+        /// <returns></returns>
+        ISagaRegistrationBuilder<TSaga> WithReceiveEndpointConfiguration<TConfigurator>(TConfigurator configurator)
             where TConfigurator : class, IReceiveEndpointConfigurator;
     }
 }

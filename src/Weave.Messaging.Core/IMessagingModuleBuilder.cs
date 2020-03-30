@@ -11,7 +11,7 @@ namespace Weave.Messaging.Core
         /// Registers a specific message handler.
         /// </summary>
         /// <typeparam name="THandler">Type of the message handler.</typeparam>
-        void WithHandler<THandler>() where THandler : class;
+        void WithHandler<THandler>() where THandler : IMessageHandler;
 
         /// <summary>
         /// Registers a saga.

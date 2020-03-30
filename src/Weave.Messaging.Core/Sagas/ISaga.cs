@@ -17,7 +17,7 @@ namespace Weave.Messaging.Core.Sagas
 #pragma warning disable 618
     public interface ISaga<TState> : ISaga
 #pragma warning restore 618
-        where TState : class, new()
+        where TState : class
     {
         /// <summary>
         /// 

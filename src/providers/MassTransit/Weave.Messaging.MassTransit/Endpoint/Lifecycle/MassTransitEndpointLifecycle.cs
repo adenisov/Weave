@@ -10,6 +10,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         public event EventHandler<ContainerRegisteredEventArgs> ContainerRegistered;
         public event EventHandler<ServiceFactoryConfiguredEventArgs> ServiceFactoryConfigured;
         public event EventHandler<MessageBusConfiguringEventArgs> MessageBusConfiguring;
+        public event EventHandler<MessageBusTransportConfiguredEventArgs> MessageBusTransportConfigured;
         public event EventHandler<MessageBusConfiguredEventArgs> MessageBusConfigured;
         public event EventHandler<MessageBusStartedEventArgs> MessageBusStarted;
         public event EventHandler<MessageHandlerRegisteredEventArgs> QueryHandlerRegistered;
@@ -23,6 +24,11 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         public void EmitMessageBusConfiguring(IBusFactoryConfigurator configurator)
         {
             MessageBusConfiguring?.Invoke(this, new MessageBusConfiguringEventArgs(configurator));
+        }
+
+        public void EmitMessageBusTransportConfigured(IHost host, IBusFactoryConfigurator configurator)
+        {
+            MessageBusTransportConfigured?.Invoke(this, new MessageBusTransportConfiguredEventArgs(host, configurator));
         }
 
         public void EmitMessageBusConfigured()

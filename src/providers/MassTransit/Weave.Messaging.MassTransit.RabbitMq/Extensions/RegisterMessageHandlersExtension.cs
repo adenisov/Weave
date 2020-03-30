@@ -7,7 +7,6 @@ using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 using MassTransit;
 using MassTransit.RabbitMqTransport;
 using Weave.Messaging.Core;
-using Weave.Messaging.Debug.UseCases.Saga;
 using Weave.Messaging.MassTransit.Consumers;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
@@ -35,25 +34,20 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                 ReferenceEquals(this, obj) || obj is RegisteredMessageHandler other && Equals(other);
         }
 
-        private readonly RabbitMqHostSettings _rabbitMqHostSettings;
         private readonly IRabbitMqTopology _rabbitMqTopology;
         private readonly IRabbitMqTopologyFeaturesConfiguration _topologyFeaturesConfiguration;
 
         private readonly ICollection<RegisteredMessageHandler> _registeredQueryHandlers = new HashSet<RegisteredMessageHandler>();
         private readonly ICollection<RegisteredMessageHandler> _registeredCommandHandlers = new HashSet<RegisteredMessageHandler>();
         private readonly ICollection<RegisteredMessageHandler> _registeredEventHandlers = new HashSet<RegisteredMessageHandler>();
-        private readonly ICollection<Type> _registeredSagas = new HashSet<Type>();
 
         private IRabbitMqHost _host;
         private IRabbitMqBusFactoryConfigurator _configurator;
         private Action<IContainerRegistar> _containerRegistar;
 
-        public RegisterMessageHandlersExtension(
-            RabbitMqHostSettings rabbitMqHostSettings,
-            IRabbitMqTopology rabbitMqTopology,
+        public RegisterMessageHandlersExtension(IRabbitMqTopology rabbitMqTopology,
             IRabbitMqTopologyFeaturesConfiguration topologyFeaturesConfiguration)
         {
-            _rabbitMqHostSettings = rabbitMqHostSettings;
             _rabbitMqTopology = rabbitMqTopology;
             _topologyFeaturesConfiguration = topologyFeaturesConfiguration;
         }
@@ -63,9 +57,15 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
             endpointLifecycle.QueryHandlerRegistered += OnQueryHandlerRegistered;
             endpointLifecycle.CommandHandlerRegistered += OnCommandHandlerRegistered;
             endpointLifecycle.EventHandlerRegistered += OnEventHandlerRegistered;
-            endpointLifecycle.SagaRegistered += OnSagaRegistered;
             endpointLifecycle.ContainerRegistered += OnContainerRegistered;
+            endpointLifecycle.MessageBusTransportConfigured += OnMessageBusTransportConfigured;
             endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
+        }
+
+        private void OnMessageBusTransportConfigured(object sender, MessageBusTransportConfiguredEventArgs e)
+        {
+            _configurator = (IRabbitMqBusFactoryConfigurator) e.Configurator;
+            _host = (IRabbitMqHost) e.Host;
         }
 
         private void OnContainerRegistered(object sender, ContainerRegisteredEventArgs e)
@@ -75,25 +75,9 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
 
         private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e)
         {
-            _configurator = (IRabbitMqBusFactoryConfigurator) e.Configurator;
-            _host = CreateHost(_configurator);
-
             RegisterQueryHandlers(_registeredQueryHandlers);
             RegisterCommandHandlers(_registeredCommandHandlers);
             RegisterEventHandlers(_registeredEventHandlers);
-            RegisterSagas(_registeredSagas);
-        }
-
-        private IRabbitMqHost CreateHost(IRabbitMqBusFactoryConfigurator configurator)
-        {
-            return configurator.Host(
-                _rabbitMqHostSettings.Host,
-                (ushort) _rabbitMqHostSettings.Port,
-                _rabbitMqHostSettings.VirtualHost, c =>
-                {
-                    c.Username(_rabbitMqHostSettings.Username);
-                    c.Password(_rabbitMqHostSettings.Password);
-                });
         }
 
         private void RegisterQueryHandlers(IEnumerable<RegisteredMessageHandler> handlers)
@@ -118,7 +102,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                 var messageType = commandHandler.MessageType;
 
                 Type handlerAdapterType;
-                if (messageType.HasResponseMessage())
+                if (!messageType.HasResponseMessage())
                 {
                     handlerAdapterType = typeof(CommandHandlerConsumerAdapter<,>).MakeGenericType(
                         commandHandler.HandlerType,
@@ -150,23 +134,6 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
             }
         }
 
-        private void RegisterSagas(IEnumerable<Type> sagas)
-        {
-            foreach (var sagaType in sagas)
-            {
-                _configurator.ReceiveEndpoint(
-                    _host,
-                    _rabbitMqTopology.GetLocalInputQueueName(sagaType),
-                    c =>
-                    {
-                        _containerRegistar(
-                            SagaRegistrationFactory
-                                .ForSaga<OrderSagaData>()
-                                .WithReceiveEndpointConfiguration(c));
-                    });
-            }
-        }
-
         private void RegisterMessageHandler(Type handlerType, RegisteredMessageHandler handler, InputSettings inputSettings)
         {
             // ReSharper disable once PossibleNullReferenceException
@@ -177,7 +144,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
             method.Invoke(this, new object[] { handler, inputSettings });
         }
 
-        [UsedImplicitly]
+        [UsedImplicitly(ImplicitUseTargetFlags.Members)]
         private void RegisterMessageConsumer<TConsumer>(RegisteredMessageHandler handler, InputSettings inputSettings)
             where TConsumer : class, IConsumer
         {
@@ -211,27 +178,16 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                 });
         }
 
-        private void OnQueryHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs eventArgs)
-        {
-            _registeredQueryHandlers.Add(new RegisteredMessageHandler(eventArgs.MessageType,
-                eventArgs.MessageHandlerType));
-        }
+        private void OnQueryHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs e) =>
+            _registeredQueryHandlers.Add(new RegisteredMessageHandler(e.MessageType,
+                e.MessageHandlerType));
 
-        private void OnCommandHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs eventArgs)
-        {
-            _registeredCommandHandlers.Add(new RegisteredMessageHandler(eventArgs.MessageType,
-                eventArgs.MessageHandlerType));
-        }
+        private void OnCommandHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs e) =>
+            _registeredCommandHandlers.Add(new RegisteredMessageHandler(e.MessageType,
+                e.MessageHandlerType));
 
-        private void OnEventHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs eventArgs)
-        {
-            _registeredEventHandlers.Add(new RegisteredMessageHandler(eventArgs.MessageType,
-                eventArgs.MessageHandlerType));
-        }
-
-        private void OnSagaRegistered(object sender, SagaRegisteredEventArgs e)
-        {
-            _registeredSagas.Add(e.SagaType);
-        }
+        private void OnEventHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs e) =>
+            _registeredEventHandlers.Add(new RegisteredMessageHandler(e.MessageType,
+                e.MessageHandlerType));
     }
 }

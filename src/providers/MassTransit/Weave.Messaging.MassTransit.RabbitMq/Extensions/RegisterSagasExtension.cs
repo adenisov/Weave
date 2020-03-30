@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using MassTransit.RabbitMqTransport;
+using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 
@@ -5,13 +9,67 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
 {
     public sealed class RegisterSagasExtension : IEndpointExtension
     {
+        private readonly ICollection<Type> _registeredSagas = new HashSet<Type>();
+        private readonly IRabbitMqTopology _rabbitMqTopology;
+
+        private Action<IContainerRegistar> _containerRegistar;
+        private IRabbitMqHost _host;
+        private IRabbitMqBusFactoryConfigurator _configurator;
+
+        public RegisterSagasExtension(IRabbitMqTopology rabbitMqTopology)
+        {
+            _rabbitMqTopology = rabbitMqTopology;
+        }
+
         public void Attach(IMassTransitEndpointLifecycle endpointLifecycle)
         {
+            endpointLifecycle.ContainerRegistered += OnContainerRegistered;
+            endpointLifecycle.MessageBusTransportConfigured += OnMessageBusTransportConfigured;
             endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
+            endpointLifecycle.SagaRegistered += OnSagaRegistered;
+        }
+
+        private void OnMessageBusTransportConfigured(object sender, MessageBusTransportConfiguredEventArgs e)
+        {
+            _host = (IRabbitMqHost) e.Host;
+            _configurator = (IRabbitMqBusFactoryConfigurator) e.Configurator;
+        }
+
+        private void OnContainerRegistered(object sender, ContainerRegisteredEventArgs e)
+        {
+            _containerRegistar = e.Registar;
         }
 
         private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e)
         {
+            RegisterSagas(_registeredSagas);
+        }
+
+        private void RegisterSagas(IEnumerable<Type> sagas)
+        {
+            foreach (var sagaType in sagas)
+            {
+                _configurator.ReceiveEndpoint(
+                    _host,
+                    _rabbitMqTopology.GetLocalInputQueueName(sagaType),
+                    c =>
+                    {
+                        // ToDo: to generic method call
+                        /*
+                        _containerRegistar(
+                            SagaRegistrationFactory
+                                .ForStateMachineSaga<OrderSagaData>()
+                                .WithReceiveEndpointConfiguration(c));
+                        */
+                    });
+            }
+        }
+
+        private void OnSagaRegistered(object sender, SagaRegisteredEventArgs e)
+        {
+            _registeredSagas.Add(e.SagaType);
+            
+            _containerRegistar(RegistrationBuilder.RegisterType(e.SagaType));
         }
     }
 }

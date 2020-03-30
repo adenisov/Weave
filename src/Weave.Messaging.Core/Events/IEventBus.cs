@@ -6,7 +6,7 @@ namespace Weave.Messaging.Core.Events
     /// <summary>
     /// 
     /// </summary>
-    public interface IEventBus : IDisposable
+    public interface IEventBus
     {
         /// <summary>
         /// 

@@ -14,7 +14,8 @@ namespace Weave.Messaging.Core
 
         public ICollection<Type> SagaTypes { get; } = new HashSet<Type>();
 
-        public void WithHandler<THandler>() where THandler : class
+        public void WithHandler<THandler>()
+            where THandler : IMessageHandler
         {
             var handlerType = typeof(THandler);
 
@@ -37,7 +38,8 @@ namespace Weave.Messaging.Core
         }
 
 #pragma warning disable 618
-        public void WithSaga<TSaga>() where TSaga : ISaga
+        public void WithSaga<TSaga>()
+            where TSaga : ISaga
 #pragma warning restore 618
         {
             SagaTypes.Add(typeof(TSaga));

@@ -10,6 +10,7 @@ using Weave.Messaging.Core.Sagas;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 using MassTransit;
+using MassTransit.Topology.EntityNameFormatters;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 
 namespace Weave.Messaging.MassTransit
@@ -70,6 +71,12 @@ namespace Weave.Messaging.MassTransit
             }
         }
 
+        public void RegisterMessagingModule<TModule>()
+            where TModule : IMessagingModule, new()
+        {
+            RegisterMessagingModule(new TModule());
+        }
+
         public void ConfigureContainer(IContainerConfigurator configurator)
         {
             _containerConfigurator = configurator;
@@ -91,14 +98,6 @@ namespace Weave.Messaging.MassTransit
             }
 
             _containerConfigurator.Configure(GetConfigureFactory(ConfigurationAction));
-
-            /*
-            using (var serviceFactory = _serviceFactoryProvider())
-            {
-                _busControl = serviceFactory.GetService<IBusControl>();
-                _lifecycle.EmitMessageBusConfigured(_busControl);
-            }
-            */
         }
 
         public IMassTransitMessageBus CreateMessageBus()
@@ -144,7 +143,7 @@ namespace Weave.Messaging.MassTransit
         private readonly IEndpointBehavior[] _defaultBehaviorSet =
         {
             new RegisterMessageHandlersInContainer(),
-            new RegisterEntityFormatter(() => GlobalEntityNameFormatter.Default),
+            new RegisterEntityFormatter(t => MessageUrn.ForType(t).ToString()),
             new ConfigureParallelOptionsBehavior(),
             new ConfigureSerializationBehavior(),
         };
@@ -152,10 +151,7 @@ namespace Weave.Messaging.MassTransit
         public void Dispose()
         {
             _lifecycle.EmitMessageBusStopping();
-
-            _messageBus?.Dispose();
             _busControl?.Stop();
-
             _lifecycle.EmitMessageBusStopped();
         }
     }

@@ -3,6 +3,7 @@ using System.Linq;
 using Weave.Messaging.Core.Commands;
 using Weave.Messaging.Core.Events;
 using Weave.Messaging.Core.Queries;
+using Weave.Messaging.Core.Sagas;
 
 namespace Weave.Messaging.Core
 {
@@ -91,8 +92,8 @@ namespace Weave.Messaging.Core
         {
             return type
                 .GetInterfaces()
-                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryMessage<,>) ||
-                          i.GetGenericTypeDefinition() == typeof(ICommandMessage<,>));
+                .Any(i => i.IsGenericType && (i.GetGenericTypeDefinition() == typeof(IQueryMessage<,>) ||
+                                              i.GetGenericTypeDefinition() == typeof(ICommandMessage<,>)));
         }
 
         public static Type GetResponseMessage2(this Type type)
@@ -100,6 +101,15 @@ namespace Weave.Messaging.Core
             return type.GetInterfaces()
                 .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandMessage<,>))
                 .Select(i => i.GetGenericArguments().Last()).First();
+        }
+
+        public static Type GetSagaDataType(this Type sagaType)
+        {
+            var sagaInterfaces = sagaType
+                .GetInterfaces()
+                .Single(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISaga<>));
+
+            return sagaInterfaces.GetGenericArguments().Single();
         }
     }
 }

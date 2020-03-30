@@ -4,6 +4,7 @@ using Autofac;
 using Automatonymous;
 using MassTransit;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
+using ISaga = MassTransit.Saga.ISaga;
 
 namespace Weave.Messaging.MassTransit.Autofac
 {
@@ -18,7 +19,8 @@ namespace Weave.Messaging.MassTransit.Autofac
             _containerBuilder.RegisterBuildCallback(c => _container = c);
         }
 
-        public void Register<T>(IInstanceRegistrationSource<T> source) where T : class
+        public void Register<T>(IInstanceRegistrationSource<T> source)
+            where T : class
         {
             var registrationBuilder = _containerBuilder.RegisterInstance(source.Instance);
             if (source.AsTypes != null && source.AsTypes.Any())
@@ -29,9 +31,12 @@ namespace Weave.Messaging.MassTransit.Autofac
 
         public void Register(RegistrationBuilder builder)
         {
-            var registrationBuilder = _containerBuilder
-                .RegisterType(builder.Type)
-                .As(builder.Registrations.ToArray());
+            var registrationBuilder = _containerBuilder.RegisterType(builder.Type);
+            {
+                registrationBuilder = builder.Registrations.Any()
+                    ? registrationBuilder.As(builder.Registrations)
+                    : registrationBuilder.AsImplementedInterfaces();
+            }
 
             switch (builder.LifetimeScope)
             {
@@ -50,16 +55,22 @@ namespace Weave.Messaging.MassTransit.Autofac
             }
         }
 
-        public void Register<TConsumer>(IConsumerRegistrationBuilder<TConsumer> consumerRegistrationBuilder)
+        public void Register<TConsumer>(IConsumerRegistrationBuilder<TConsumer> builder)
             where TConsumer : class, IConsumer
         {
-            consumerRegistrationBuilder.Configurator.Consumer<TConsumer>(_container);
+            builder.Configurator.Consumer<TConsumer>(_container);
         }
 
-        public void Register<TSagaInstance>(ISagaRegistrationBuilder<TSagaInstance> sagaRegistrationBuilder)
+        public void Register<TSagaInstance>(IStateMachineSagaRegistrationBuilder<TSagaInstance> builder)
             where TSagaInstance : class, SagaStateMachineInstance
         {
-            sagaRegistrationBuilder.Configurator.StateMachineSaga<TSagaInstance>(_container);
+            builder.Configurator.StateMachineSaga<TSagaInstance>(_container);
+        }
+
+        public void Register<TSaga>(ISagaRegistrationBuilder<TSaga> builder)
+            where TSaga : class, ISaga
+        {
+            builder.Configurator.Saga<TSaga>(_container);
         }
     }
 }

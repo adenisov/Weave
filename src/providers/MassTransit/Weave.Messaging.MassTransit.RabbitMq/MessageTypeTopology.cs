@@ -1,4 +1,5 @@
 using System;
+using MassTransit;
 
 namespace Weave.Messaging.MassTransit.RabbitMq
 {
@@ -19,7 +20,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         {
             return new MessageAddress
             {
-                ExchangeName = messageType.FullName,
+                ExchangeName = MessageUrn.ForType(messageType).ToString(),
                 ExchangeType = ExchangeType.Fanout
             };
         }

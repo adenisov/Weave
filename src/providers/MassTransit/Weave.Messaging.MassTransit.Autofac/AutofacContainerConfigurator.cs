@@ -2,12 +2,15 @@ using System;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Autofac;
 using MassTransit;
+using Weave.Messaging.MassTransit.Autofac.Modules;
 using Module = Autofac.Module;
 
 namespace Weave.Messaging.MassTransit.Autofac
 {
     public sealed class AutofacContainerConfigurator : IContainerConfigurator
     {
+        internal const string ScopeName = "message";
+        
         private readonly AutofacContainerRegistration _containerRegistration;
         private readonly ContainerBuilder _containerBuilder;
         private readonly Module[] _extensionModules;
@@ -20,11 +23,12 @@ namespace Weave.Messaging.MassTransit.Autofac
             _extensionModules = modules;
             _containerBuilder.RegisterBuildCallback(c => _container = c);
             _containerRegistration = new AutofacContainerRegistration(_containerBuilder);
+            
             RegisterModules();
         }
 
         public void Configure(Func<IBusControl> busConfigureFactory) =>
-            _containerBuilder.AddMassTransit(c => c.AddBus(componentContext => busConfigureFactory()));
+            _containerBuilder.AddMassTransit(c => c.AddBus(context => busConfigureFactory()));
 
         public Func<IServiceFactory> ServiceFactoryProvider
         {

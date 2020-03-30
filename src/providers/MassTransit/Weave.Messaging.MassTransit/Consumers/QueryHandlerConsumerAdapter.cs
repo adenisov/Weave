@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,15 +22,6 @@ namespace Weave.Messaging.MassTransit.Consumers
         protected override async Task<TResponse> HandleInternalAsync(TRequest request, CancellationToken ct)
         {
             return await _queryHandler.HandleAsync(request, ct).DropContext();
-        }
-    }
-
-    public sealed class RequestIdBehavior<TRequest, TResponse> : IBehavior<TRequest, TResponse>
-    {
-        public async Task<TResponse> HandleAsync(IIncomingMessage<TRequest> message, Func<Task<TResponse>> next)
-        {
-            System.Diagnostics.Debug.WriteLine(message.Body);
-            return await next();
         }
     }
 }

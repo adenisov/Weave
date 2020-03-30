@@ -58,17 +58,16 @@ namespace Weave.Messaging.MassTransit.RabbitMq
 
             var extensions = new List<IEndpointExtension>
             {
-                new RegisterMessageHandlersExtension(
-                    _rabbitMqHostSettings,
-                    _rabbitMqTopology,
-                    _rabbitMqTopologyFeaturesConfiguration)
+                new RegisterRabbitMqTransportExtension(_rabbitMqHostSettings),
+                new RegisterMessageHandlersExtension(_rabbitMqTopology, _rabbitMqTopologyFeaturesConfiguration),
+                new RegisterSagasExtension(_rabbitMqTopology)
             };
 
             extensions.AddRange(CustomExtensions);
-            
+
             var endpoint = new MassTransitRabbitMqEndpoint(extensions.ToArray());
             endpoint.ConfigureContainer(ContainerConfigurator);
-            
+
             return endpoint;
         }
 

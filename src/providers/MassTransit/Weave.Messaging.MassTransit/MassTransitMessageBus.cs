@@ -85,7 +85,5 @@ namespace Weave.Messaging.MassTransit
 
             await _bus.Publish<TEvent>(@event, ConfigurationCallback, config.CancellationToken).ConfigureAwait(false);
         }
-
-        public void Dispose() => _bus.Stop();
     }
 }

@@ -48,6 +48,11 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         /// <summary>
         /// 
         /// </summary>
+        event EventHandler<MessageBusTransportConfiguredEventArgs> MessageBusTransportConfigured; 
+
+        /// <summary>
+        /// 
+        /// </summary>
         event EventHandler<MessageBusConfiguredEventArgs> MessageBusConfigured; 
 
         /// <summary>
@@ -75,6 +80,13 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         /// </summary>
         /// <param name="configurator"></param>
         void EmitMessageBusConfiguring(IBusFactoryConfigurator configurator);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="host"></param>
+        /// <param name="configurator"></param>
+        void EmitMessageBusTransportConfigured(IHost host, IBusFactoryConfigurator configurator);
 
         /// <summary>
         /// 

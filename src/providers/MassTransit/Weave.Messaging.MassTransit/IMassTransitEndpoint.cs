@@ -20,9 +20,16 @@ namespace Weave.Messaging.MassTransit
         /// <summary>
         /// 
         /// </summary>
+        /// <typeparam name="TModule"></typeparam>
+        void RegisterMessagingModule<TModule>()
+            where TModule : IMessagingModule, new();
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="postConfigurationAction"></param>
         void Configure(Action<IBusFactoryConfigurator> postConfigurationAction = null);
-        
+
         /// <summary>
         /// 
         /// </summary>

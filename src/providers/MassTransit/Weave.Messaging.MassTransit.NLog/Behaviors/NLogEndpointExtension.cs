@@ -14,9 +14,6 @@ namespace Weave.Messaging.MassTransit.NLog.Behaviors
             endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
         }
 
-        private static void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e)
-        {
-            e.Configurator.UseNLog();
-        }
+        private static void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e) => e.Configurator.UseNLog();
     }
 }
