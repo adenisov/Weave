@@ -16,14 +16,12 @@ namespace Weave.Messaging.MassTransit.RabbitMq
 
         public string GetLocalInputQueueName<TMessage>() => GetLocalInputQueueName(typeof(TMessage));
 
-        public MessageAddress GetRemoteMessageAddress(Type messageType)
-        {
-            return new MessageAddress
+        public MessageAddress GetRemoteMessageAddress(Type messageType) =>
+            new MessageAddress
             {
                 ExchangeName = MessageUrn.ForType(messageType).ToString(),
                 ExchangeType = ExchangeType.Fanout
             };
-        }
 
         public MessageAddress GetRemoteMessageAddress<TMessage>() => GetRemoteMessageAddress(typeof(TMessage));
     }

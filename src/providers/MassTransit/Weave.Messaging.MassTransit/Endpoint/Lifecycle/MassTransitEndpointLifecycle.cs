@@ -66,7 +66,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
             MessageBusStarting?.Invoke(this, new MessageBusStartingEventArgs(busControl));
         }
 
-        public void EmitContainerProvided(Action<IContainerRegistar> registar)
+        public void EmitContainerProvided(ContainerRegistar registar)
         {
             ContainerRegistered?.Invoke(this, new ContainerRegisteredEventArgs(registar));
         }

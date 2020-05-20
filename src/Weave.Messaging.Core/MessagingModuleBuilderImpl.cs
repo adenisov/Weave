@@ -18,7 +18,6 @@ namespace Weave.Messaging.Core
             where THandler : IMessageHandler
         {
             var handlerType = typeof(THandler);
-
             if (handlerType.IsQueryHandlerType())
             {
                 QueryHandlerTypes.Add(handlerType);
@@ -33,12 +32,12 @@ namespace Weave.Messaging.Core
             }
             else
             {
-                throw new InvalidOperationException("");
+                throw new InvalidOperationException($"{typeof(THandler)} must be assignable to {typeof(IMessageHandler)}.");
             }
         }
 
-#pragma warning disable 618
         public void WithSaga<TSaga>()
+#pragma warning disable 618
             where TSaga : ISaga
 #pragma warning restore 618
         {

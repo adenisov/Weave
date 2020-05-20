@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Automatonymous;
 using MassTransit.RabbitMqTransport;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
@@ -12,7 +14,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         private readonly ICollection<Type> _registeredSagas = new HashSet<Type>();
         private readonly IRabbitMqTopology _rabbitMqTopology;
 
-        private Action<IContainerRegistar> _containerRegistar;
+        private ContainerRegistar _containerRegistar;
         private IRabbitMqHost _host;
         private IRabbitMqBusFactoryConfigurator _configurator;
 
@@ -49,27 +51,39 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         {
             foreach (var sagaType in sagas)
             {
-                _configurator.ReceiveEndpoint(
-                    _host,
-                    _rabbitMqTopology.GetLocalInputQueueName(sagaType),
-                    c =>
-                    {
-                        // ToDo: to generic method call
-                        /*
-                        _containerRegistar(
-                            SagaRegistrationFactory
-                                .ForStateMachineSaga<OrderSagaData>()
-                                .WithReceiveEndpointConfiguration(c));
-                        */
-                    });
+                // ReSharper disable once PossibleNullReferenceException
+                typeof(RegisterSagasExtension).GetMethod(nameof(RegisterStateMachineSaga), BindingFlags.Instance | BindingFlags.NonPublic)
+                    .MakeGenericMethod(sagaType)
+                    .Invoke(this, null);
             }
+        }
+
+        private void RegisterStateMachineSaga<TSaga>()
+#pragma warning disable 618
+            where TSaga : class, SagaStateMachineInstance
+#pragma warning restore 618
+        {
+            _configurator.ReceiveEndpoint(
+                _host,
+                _rabbitMqTopology.GetLocalInputQueueName(typeof(TSaga)),
+                c =>
+                {
+                    _containerRegistar(
+                        SagaRegistrationFactory
+                            .ForStateMachineSaga<TSaga>()
+                            .WithReceiveEndpointConfiguration(c));
+                });
         }
 
         private void OnSagaRegistered(object sender, SagaRegisteredEventArgs e)
         {
             _registeredSagas.Add(e.SagaType);
-            
+
             _containerRegistar(RegistrationBuilder.RegisterType(e.SagaType));
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

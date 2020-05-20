@@ -5,8 +5,8 @@ namespace Weave.Messaging.Core
 {
     public sealed class MessageHeaders
     {
-        public const string CorrelationIdHeader = "correlation-id";
-        public const string MessageIdHeader = "message-id";
+        public const string CorrelationIdHeader = "CorrelationId";
+        public const string MessageIdHeader = "MessageId";
 
         private readonly IDictionary<string, string> _headers;
 
@@ -44,13 +44,15 @@ namespace Weave.Messaging.Core
                 throw new ArgumentNullException(nameof(headers));
             }
 
-            foreach (var header in headers)
+            foreach (var (key, value) in headers)
             {
-                WithHeader(header.Key, header.Value);
+                WithHeader(key, value);
             }
 
             return this;
         }
+
+        public string this[string key] => _headers[key];
 
         public Guid? MessageId
         {

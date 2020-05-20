@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -16,16 +17,24 @@ namespace Weave.Messaging.MassTransit
         protected IReadOnlyCollection<IEndpointExtension> CustomExtensions => _customExtensions.ToImmutableHashSet();
         protected IContainerConfigurator ContainerConfigurator;
 
+        protected virtual void Validate()
+        {
+            if (ContainerConfigurator == null)
+            {
+                throw new InvalidOperationException($"{nameof(ContainerConfigurator)} must be specified.");
+            }
+        }
+
         /// <summary>
         ///
         /// </summary>
-        /// <param name="behavior"></param>
+        /// <param name="extension"></param>
         /// <typeparam name="TExtension"></typeparam>
         /// <returns></returns>
-        public TBuilder WithCustomExtension<TExtension>(TExtension behavior)
+        public TBuilder WithCustomExtension<TExtension>(TExtension extension)
             where TExtension : class, IEndpointExtension
         {
-            _customExtensions.Add(behavior);
+            _customExtensions.Add(extension);
 
             return (TBuilder) this;
         }
@@ -38,7 +47,20 @@ namespace Weave.Messaging.MassTransit
         public TBuilder WithCustomExtension<TExtension>()
             where TExtension : class, IEndpointExtension, new()
         {
-            _customExtensions.Add(new TExtension());
+            return WithCustomExtension(new TExtension());
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="extensions"></param>
+        /// <returns></returns>
+        public TBuilder WithCustomExtensions(params IEndpointExtension[] extensions)
+        {
+            foreach (var extension in extensions)
+            {
+                WithCustomExtension(extension);
+            }
 
             return (TBuilder) this;
         }

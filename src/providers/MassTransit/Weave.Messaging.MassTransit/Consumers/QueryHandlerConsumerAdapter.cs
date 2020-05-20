@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Weave.Messaging.Core;
 using Weave.Messaging.Core.Queries;
+using Weave.Messaging.MassTransit.Consumers.Behaviors;
 
 namespace Weave.Messaging.MassTransit.Consumers
 {

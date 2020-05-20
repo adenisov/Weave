@@ -12,7 +12,23 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         private readonly RabbitMqHostSettings _rabbitMqHostSettings = new RabbitMqHostSettings();
 
         private IRabbitMqTopology _rabbitMqTopology;
-        private IRabbitMqTopologyFeaturesConfiguration _rabbitMqTopologyFeaturesConfiguration;
+
+        private IRabbitMqTopologyFeaturesConfiguration _rabbitMqTopologyFeaturesConfiguration =
+            new DefaultRabbitMqTopologyFeaturesConfiguration();
+
+        internal RabbitMqEndpointBuilder()
+        {
+        }
+
+        protected override void Validate()
+        {
+            base.Validate();
+
+            if (_rabbitMqTopology == null)
+            {
+                throw new InvalidOperationException("Topology must be specified.");
+            }
+        }
 
         /// <summary>
         ///
@@ -33,11 +49,14 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         /// <returns></returns>
         public RabbitMqEndpointBuilder WithMessageTypeTopology(string applicationName)
         {
-            _rabbitMqTopology = new MessageTypeTopology(applicationName);
-
-            return this;
+            return WithTopology(new MessageTypeTopology(applicationName));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="topology"></param>
+        /// <returns></returns>
         public RabbitMqEndpointBuilder WithTopology(IRabbitMqTopology topology)
         {
             _rabbitMqTopology = topology;
@@ -45,6 +64,11 @@ namespace Weave.Messaging.MassTransit.RabbitMq
             return this;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="featuresConfiguration"></param>
+        /// <returns></returns>
         public RabbitMqEndpointBuilder WithTopologyFeaturesConfiguration(IRabbitMqTopologyFeaturesConfiguration featuresConfiguration)
         {
             _rabbitMqTopologyFeaturesConfiguration = featuresConfiguration;
@@ -69,14 +93,6 @@ namespace Weave.Messaging.MassTransit.RabbitMq
             endpoint.ConfigureContainer(ContainerConfigurator);
 
             return endpoint;
-        }
-
-        private void Validate()
-        {
-            if (_rabbitMqTopology == null)
-            {
-                // ToDo: throw ValidationException.
-            }
         }
     }
 }

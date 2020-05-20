@@ -22,6 +22,8 @@ namespace Weave.Messaging.MassTransit.Autofac
         public void Register<T>(IInstanceRegistrationSource<T> source)
             where T : class
         {
+            EnsureContainerIsNotBuilt();
+            
             var registrationBuilder = _containerBuilder.RegisterInstance(source.Instance);
             if (source.AsTypes != null && source.AsTypes.Any())
             {
@@ -31,6 +33,8 @@ namespace Weave.Messaging.MassTransit.Autofac
 
         public void Register(RegistrationBuilder builder)
         {
+            EnsureContainerIsNotBuilt();
+            
             var registrationBuilder = _containerBuilder.RegisterType(builder.Type);
             {
                 registrationBuilder = builder.Registrations.Any()
@@ -58,7 +62,7 @@ namespace Weave.Messaging.MassTransit.Autofac
         public void Register<TConsumer>(IConsumerRegistrationBuilder<TConsumer> builder)
             where TConsumer : class, IConsumer
         {
-            builder.Configurator.Consumer<TConsumer>(_container);
+            builder.Configurator.Consumer(_container, builder.ConsumerConfigurator);
         }
 
         public void Register<TSagaInstance>(IStateMachineSagaRegistrationBuilder<TSagaInstance> builder)
@@ -71,6 +75,14 @@ namespace Weave.Messaging.MassTransit.Autofac
             where TSaga : class, ISaga
         {
             builder.Configurator.Saga<TSaga>(_container);
+        }
+
+        private void EnsureContainerIsNotBuilt()
+        {
+            if (_container != null)
+            {
+                throw new InvalidOperationException("cannot perform registration when Container is built.");
+            }
         }
     }
 }

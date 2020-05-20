@@ -15,7 +15,7 @@ namespace Weave.Messaging.MassTransit
         /// <param name="messagingModule"></param>
         /// <typeparam name="TModule"></typeparam>
         void RegisterMessagingModule<TModule>(TModule messagingModule)
-            where TModule : IMessagingModule, new();
+            where TModule : IMessagingModule;
 
         /// <summary>
         /// 
@@ -27,13 +27,15 @@ namespace Weave.Messaging.MassTransit
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="postConfigurationAction"></param>
-        void Configure(Action<IBusFactoryConfigurator> postConfigurationAction = null);
+        /// <param name="preConfigure"></param>
+        /// <param name="postConfigure"></param>
+        void Configure(Action<IBusFactoryConfigurator> preConfigure = null, Action<IBusFactoryConfigurator> postConfigure = null);
 
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="timeout"></param>
         /// <returns></returns>
-        IMassTransitMessageBus CreateMessageBus();
+        IMassTransitMessageBus CreateMessageBus(TimeSpan timeout = default);
     }
 }

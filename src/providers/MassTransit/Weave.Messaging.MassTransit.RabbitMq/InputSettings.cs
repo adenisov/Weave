@@ -28,5 +28,10 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         /// 
         /// </summary>
         public int PrefetchCount { get; set; }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool PurgeOnStartup { get; set; }
     }
 }

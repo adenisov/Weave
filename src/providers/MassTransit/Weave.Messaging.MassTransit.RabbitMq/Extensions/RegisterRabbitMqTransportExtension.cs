@@ -23,16 +23,20 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         }
 
         private void OnMessageBusConfiguring(Action<IHost> hostEmitter, MessageBusConfiguringEventArgs e) =>
-            hostEmitter(CreateHost((IRabbitMqBusFactoryConfigurator) e.Configurator));
+            hostEmitter(CreateHost((IRabbitMqBusFactoryConfigurator) e.Configurator, _rabbitMqHostSettings));
 
-        private IRabbitMqHost CreateHost(IRabbitMqBusFactoryConfigurator configurator) =>
+        private static IRabbitMqHost CreateHost(IRabbitMqBusFactoryConfigurator configurator, RabbitMqHostSettings hostSettings) =>
             configurator.Host(
-                _rabbitMqHostSettings.Host,
-                (ushort) _rabbitMqHostSettings.Port,
-                _rabbitMqHostSettings.VirtualHost, c =>
+                hostSettings.Host,
+                (ushort) hostSettings.Port,
+                hostSettings.VirtualHost, c =>
                 {
-                    c.Username(_rabbitMqHostSettings.Username);
-                    c.Password(_rabbitMqHostSettings.Password);
+                    c.Username(hostSettings.Username);
+                    c.Password(hostSettings.Password);
                 });
+
+        public void Dispose()
+        {
+        }
     }
 }

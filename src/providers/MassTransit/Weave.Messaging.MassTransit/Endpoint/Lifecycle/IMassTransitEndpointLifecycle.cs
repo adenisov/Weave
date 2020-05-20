@@ -137,7 +137,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         /// 
         /// </summary>
         /// <param name="registar"></param>
-        void EmitContainerProvided(Action<IContainerRegistar> registar);
+        void EmitContainerProvided(ContainerRegistar registar);
 
         /// <summary>
         /// 

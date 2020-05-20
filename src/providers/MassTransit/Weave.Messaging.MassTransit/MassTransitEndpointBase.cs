@@ -10,7 +10,6 @@ using Weave.Messaging.Core.Sagas;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 using MassTransit;
-using MassTransit.Topology.EntityNameFormatters;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 
 namespace Weave.Messaging.MassTransit
@@ -23,6 +22,7 @@ namespace Weave.Messaging.MassTransit
         private IBusControl _busControl;
         private IMassTransitMessageBus _messageBus;
         private IContainerConfigurator _containerConfigurator;
+        private IContainerRegistration _containerRegistration;
         private Func<IServiceFactory> _serviceFactoryProvider;
 
         protected MassTransitEndpointBase(params IEndpointExtension[] extensions)
@@ -60,15 +60,12 @@ namespace Weave.Messaging.MassTransit
         }
 
         public void RegisterMessagingModule<TModule>(TModule messagingModule)
-            where TModule : IMessagingModule, new()
+            where TModule : IMessagingModule
         {
-            var module = new TModule();
-            {
-                module.RegisterQueryHandlers(this);
-                module.RegisterCommandHandlers(this);
-                module.RegisterEventHandlers(this);
-                module.RegisterSagas(this);
-            }
+            messagingModule.RegisterQueryHandlers(this);
+            messagingModule.RegisterCommandHandlers(this);
+            messagingModule.RegisterEventHandlers(this);
+            messagingModule.RegisterSagas(this);
         }
 
         public void RegisterMessagingModule<TModule>()
@@ -84,23 +81,24 @@ namespace Weave.Messaging.MassTransit
             _serviceFactoryProvider = _containerConfigurator.ServiceFactoryProvider;
             _lifecycle.EmitServiceFactoryConfigured(_serviceFactoryProvider);
 
-            var containerRegistration = _containerConfigurator.ContainerRegistration;
-            _lifecycle.EmitContainerProvided(_ => _.Register(containerRegistration));
+            _containerRegistration = _containerConfigurator.ContainerRegistration;
+            _lifecycle.EmitContainerProvided(_ => _.Register(_containerRegistration));
         }
 
-        public void Configure(Action<IBusFactoryConfigurator> postConfigurationAction = null)
+        public void Configure(Action<IBusFactoryConfigurator> preConfigure = null, Action<IBusFactoryConfigurator> postConfigure = null)
         {
             void ConfigurationAction(IBusFactoryConfigurator configurator)
             {
+                preConfigure?.Invoke(configurator);
                 _lifecycle.EmitMessageBusConfiguring(configurator);
-                postConfigurationAction?.Invoke(configurator);
+                postConfigure?.Invoke(configurator);
                 _lifecycle.EmitMessageBusConfigured();
             }
 
             _containerConfigurator.Configure(GetConfigureFactory(ConfigurationAction));
         }
 
-        public IMassTransitMessageBus CreateMessageBus()
+        public IMassTransitMessageBus CreateMessageBus(TimeSpan timeout = default)
         {
             if (_messageBus != null)
             {
@@ -112,11 +110,18 @@ namespace Weave.Messaging.MassTransit
 
             if (_busControl == null)
             {
-                throw new InvalidOperationException("busControl wasn't properly configured. forgot to call .Configure()?");
+                throw new InvalidOperationException($"busControl wasn't properly configured. forgot to call {nameof(Configure)}?");
             }
 
             _lifecycle.EmitMessageBusStarting(_busControl);
-            _busControl.Start();
+            if (timeout == default)
+            {
+                _busControl.Start();
+            }
+            else
+            {
+                _busControl.Start(timeout);
+            }
 
             _messageBus = serviceFactory.GetService<IMassTransitMessageBus>();
             _lifecycle.EmitMessageBusStarted(_busControl, _messageBus);
@@ -146,13 +151,33 @@ namespace Weave.Messaging.MassTransit
             new RegisterEntityFormatter(t => MessageUrn.ForType(t).ToString()),
             new ConfigureParallelOptionsBehavior(),
             new ConfigureSerializationBehavior(),
+            new ExecuteHandlersInTransactionBehavior(),
+            new ProvideAccessToServiceLocatorBehavior(),
+            new MessageRetryBehavior(),
+            new MessageRedeliveryBehavior(),
+            new RegisterMessageBusBehaviors(new ConfigurePredefinedMessageHeaders()),
         };
 
-        public void Dispose()
+        private void ShutdownExtensions()
+        {
+            foreach (var endpointExtension in _extensions)
+            {
+                endpointExtension.Dispose();
+            }
+        }
+
+        private void ShutdownMessageBus()
         {
             _lifecycle.EmitMessageBusStopping();
             _busControl?.Stop();
             _lifecycle.EmitMessageBusStopped();
+        }
+
+        public void Dispose()
+        {
+            ShutdownExtensions();
+            ShutdownMessageBus();
+            GC.SuppressFinalize(this);
         }
     }
 }

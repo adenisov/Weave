@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Weave.Messaging.MassTransit.Consumers
+namespace Weave.Messaging.MassTransit.Consumers.Behaviors
 {
     /// <summary>
     /// 
@@ -9,6 +9,8 @@ namespace Weave.Messaging.MassTransit.Consumers
     /// <typeparam name="TRequest"></typeparam>
     /// <typeparam name="TResponse"></typeparam>
     public interface IBehavior<in TRequest, TResponse>
+        where TRequest : class
+        where TResponse : class
     {
         /// <summary>
         /// 

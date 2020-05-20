@@ -5,9 +5,9 @@ using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
 {
-    public sealed class RegisterMessageHandlersInContainer : IEndpointBehavior
+    internal sealed class RegisterMessageHandlersInContainer : IEndpointBehavior
     {
-        private Action<IContainerRegistar> _containerRegistar;
+        private ContainerRegistar _containerRegistar;
 
         public void Attach(IMassTransitEndpointLifecycle endpointLifecycle)
         {

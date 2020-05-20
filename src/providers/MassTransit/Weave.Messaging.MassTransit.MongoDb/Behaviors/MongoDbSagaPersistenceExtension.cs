@@ -1,4 +1,3 @@
-using System;
 using MassTransit.MongoDbIntegration.Saga;
 using MassTransit.MongoDbIntegration.Saga.Context;
 using MongoDB.Driver;
@@ -13,7 +12,7 @@ namespace Weave.Messaging.MassTransit.MongoDb.Behaviors
     {
         private readonly MongoDbHostSettings _mongoDbHostSettings;
 
-        private Action<IContainerRegistar> _containerRegistar;
+        private ContainerRegistar _containerRegistar;
 
         public MongoDbSagaPersistenceExtension(MongoDbHostSettings mongoDbHostSettings)
         {
@@ -52,6 +51,10 @@ namespace Weave.Messaging.MassTransit.MongoDb.Behaviors
         {
             var client = new MongoClient(_mongoDbHostSettings.Host);
             return client.GetDatabase(_mongoDbHostSettings.Database);
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

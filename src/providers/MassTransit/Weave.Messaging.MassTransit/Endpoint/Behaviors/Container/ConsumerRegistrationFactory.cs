@@ -1,4 +1,6 @@
+using System;
 using MassTransit;
+using MassTransit.ConsumeConfigurators;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
 {
@@ -9,10 +11,18 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
         {
             public IReceiveEndpointConfigurator Configurator { get; private set; }
 
+            public Action<IConsumerConfigurator<TConsumer>> ConsumerConfigurator { get; private set; }
+
             public IConsumerRegistrationBuilder<TConsumer> WithReceiveEndpointConfiguration<TConfigurator>(TConfigurator configurator)
                 where TConfigurator : class, IReceiveEndpointConfigurator
             {
                 Configurator = configurator;
+                return this;
+            }
+
+            public IConsumerRegistrationBuilder<TConsumer> WithConsumerConfiguration(Action<IConsumerConfigurator<TConsumer>> configurator)
+            {
+                ConsumerConfigurator = configurator;
                 return this;
             }
 

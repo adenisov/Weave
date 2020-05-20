@@ -32,25 +32,15 @@ namespace Weave.Messaging.Core
                                               i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)));
         }
 
-        public static bool IsEventHandlerType(this Type type)
-        {
-            return type.GetInterfaces()
-                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
-        }
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static bool IsSagaType(this Type type)
+        public static bool IsEventHandlerType(this Type type)
         {
-            return true;
-        }
-
-        public static Type GetQueryHandlerType(this Type type)
-        {
-            return type;
+            return type.GetInterfaces()
+                .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEventHandler<>));
         }
 
         public static Type GetQueryMessageType(this Type type)
@@ -84,7 +74,8 @@ namespace Weave.Messaging.Core
         public static Type GetResponseMessage(this Type type)
         {
             return type.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IQueryMessage<,>))
+                .Where(i => i.IsGenericType && (i.GetGenericTypeDefinition() == typeof(IQueryMessage<,>) ||
+                                                i.GetGenericTypeDefinition() == typeof(ICommandMessage<,>)))
                 .Select(i => i.GetGenericArguments().Last()).First();
         }
 
@@ -94,13 +85,6 @@ namespace Weave.Messaging.Core
                 .GetInterfaces()
                 .Any(i => i.IsGenericType && (i.GetGenericTypeDefinition() == typeof(IQueryMessage<,>) ||
                                               i.GetGenericTypeDefinition() == typeof(ICommandMessage<,>)));
-        }
-
-        public static Type GetResponseMessage2(this Type type)
-        {
-            return type.GetInterfaces()
-                .Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICommandMessage<,>))
-                .Select(i => i.GetGenericArguments().Last()).First();
         }
 
         public static Type GetSagaDataType(this Type sagaType)

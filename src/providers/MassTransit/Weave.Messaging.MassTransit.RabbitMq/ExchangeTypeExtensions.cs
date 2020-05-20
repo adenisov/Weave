@@ -10,6 +10,6 @@ namespace Weave.Messaging.MassTransit.RabbitMq
             "headers"
         };
 
-        public static string ToRabbitMqType(this ExchangeType exchangeType) => RabbitMqTypes[(int) exchangeType];
+        internal static string ToRabbitMqType(this ExchangeType exchangeType) => RabbitMqTypes[(int) exchangeType];
     }
 }

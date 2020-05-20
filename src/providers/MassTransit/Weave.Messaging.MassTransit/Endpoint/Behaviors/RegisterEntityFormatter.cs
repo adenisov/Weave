@@ -5,7 +5,7 @@ using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
 {
-    public sealed class RegisterEntityFormatter : IEndpointBehavior
+    internal sealed class RegisterEntityFormatter : IEndpointBehavior
     {
         private readonly Func<Type, string> _entityFormatter;
 

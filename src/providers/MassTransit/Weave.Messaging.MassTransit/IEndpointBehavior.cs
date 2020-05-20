@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit
@@ -8,9 +9,9 @@ namespace Weave.Messaging.MassTransit
     public interface IEndpointBehavior
     {
         /// <summary>
-        ///
+        /// 
         /// </summary>
         /// <param name="endpointLifecycle"></param>
-        void Attach(IMassTransitEndpointLifecycle endpointLifecycle);
+        void Attach([NotNull] IMassTransitEndpointLifecycle endpointLifecycle);
     }
 }

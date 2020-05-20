@@ -3,11 +3,10 @@ using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 using Autofac;
 using MassTransit;
 using Weave.Messaging.MassTransit.Autofac.Modules;
-using Module = Autofac.Module;
 
 namespace Weave.Messaging.MassTransit.Autofac
 {
-    public sealed class AutofacContainerConfigurator : IContainerConfigurator
+    internal sealed class AutofacContainerConfigurator : IContainerConfigurator
     {
         internal const string ScopeName = "message";
         

@@ -43,9 +43,10 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
 
         private IRabbitMqHost _host;
         private IRabbitMqBusFactoryConfigurator _configurator;
-        private Action<IContainerRegistar> _containerRegistar;
+        private ContainerRegistar _containerRegistar;
 
-        public RegisterMessageHandlersExtension(IRabbitMqTopology rabbitMqTopology,
+        public RegisterMessageHandlersExtension(
+            IRabbitMqTopology rabbitMqTopology,
             IRabbitMqTopologyFeaturesConfiguration topologyFeaturesConfiguration)
         {
             _rabbitMqTopology = rabbitMqTopology;
@@ -102,18 +103,18 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                 var messageType = commandHandler.MessageType;
 
                 Type handlerAdapterType;
-                if (!messageType.HasResponseMessage())
-                {
-                    handlerAdapterType = typeof(CommandHandlerConsumerAdapter<,>).MakeGenericType(
-                        commandHandler.HandlerType,
-                        messageType);
-                }
-                else
+                if (messageType.HasResponseMessage())
                 {
                     handlerAdapterType = typeof(CommandHandlerConsumerAdapter<,,>).MakeGenericType(
                         commandHandler.HandlerType,
                         messageType,
-                        messageType.GetResponseMessage2());
+                        messageType.GetResponseMessage());
+                }
+                else
+                {
+                    handlerAdapterType = typeof(CommandHandlerConsumerAdapter<,>).MakeGenericType(
+                        commandHandler.HandlerType,
+                        messageType);
                 }
 
                 RegisterMessageHandler(handlerAdapterType, commandHandler, _topologyFeaturesConfiguration.DirectInputSettings);
@@ -160,8 +161,8 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
                     c.BindMessageExchanges = inputSettings.BindMessageExchanges;
                     c.QueueExpiration = inputSettings.Ttl;
                     c.PrefetchCount = (ushort) inputSettings.PrefetchCount;
+                    c.PurgeOnStartup = inputSettings.PurgeOnStartup;
 
-                    // ReSharper disable once HeapView.ClosureAllocation
                     var address = _rabbitMqTopology.GetRemoteMessageAddress(messageType);
                     c.Bind(address.ExchangeName, e =>
                     {
@@ -189,5 +190,9 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         private void OnEventHandlerRegistered(object sender, MessageHandlerRegisteredEventArgs e) =>
             _registeredEventHandlers.Add(new RegisteredMessageHandler(e.MessageType,
                 e.MessageHandlerType));
+
+        public void Dispose()
+        {
+        }
     }
 }

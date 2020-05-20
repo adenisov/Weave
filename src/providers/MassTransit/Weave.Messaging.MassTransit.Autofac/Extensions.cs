@@ -38,11 +38,30 @@ namespace Weave.Messaging.MassTransit.Autofac
         /// <param name="additionalModules"></param>
         /// <typeparam name="TBuilder"></typeparam>
         /// <returns></returns>
-        public static MassTransitEndpointBuilder<TBuilder> UseAutofac<TBuilder>(
-            this MassTransitEndpointBuilder<TBuilder> builder,
+        public static MassTransitEndpointBuilder<TBuilder> UseAutofac<TBuilder>(this MassTransitEndpointBuilder<TBuilder> builder,
             ContainerBuilder containerBuilder,
             params Module[] additionalModules)
-            where TBuilder : MassTransitEndpointBuilder<TBuilder> =>
-            builder.WithContainerConfigurator(new AutofacContainerConfigurator(containerBuilder, additionalModules));
+            where TBuilder : MassTransitEndpointBuilder<TBuilder>
+        {
+            return builder.WithContainerConfigurator(new AutofacContainerConfigurator(containerBuilder, additionalModules));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="containerBuilderEmitter"></param>
+        /// <param name="additionalModules"></param>
+        /// <typeparam name="TBuilder"></typeparam>
+        /// <returns></returns>
+        public static MassTransitEndpointBuilder<TBuilder> UseAutofac<TBuilder>(this MassTransitEndpointBuilder<TBuilder> builder,
+            Action<ContainerBuilder> containerBuilderEmitter,
+            params Module[] additionalModules)
+            where TBuilder : MassTransitEndpointBuilder<TBuilder>
+        {
+            var containerBuilder = new ContainerBuilder();
+            containerBuilderEmitter(containerBuilder);
+            return builder.WithContainerConfigurator(new AutofacContainerConfigurator(containerBuilder, additionalModules));
+        }
     }
 }

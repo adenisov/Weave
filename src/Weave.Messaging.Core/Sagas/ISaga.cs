@@ -13,15 +13,11 @@ namespace Weave.Messaging.Core.Sagas
     /// <summary>
     /// 
     /// </summary>
-    /// <typeparam name="TState"></typeparam>
+    /// <typeparam name="TData"></typeparam>
 #pragma warning disable 618
-    public interface ISaga<TState> : ISaga
+    public interface ISaga<TData> : ISaga
 #pragma warning restore 618
-        where TState : class
+        where TData : class
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        void MarkCompleted();
     }
 }

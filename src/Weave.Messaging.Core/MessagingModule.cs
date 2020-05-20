@@ -5,6 +5,7 @@ using Weave.Messaging.Core.Events;
 using Weave.Messaging.Core.Queries;
 using Weave.Messaging.Core.Sagas;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 
 namespace Weave.Messaging.Core
@@ -60,6 +61,7 @@ namespace Weave.Messaging.Core
             }
         }
 
+        [MethodImpl(MethodImplOptions.Synchronized)]
         private void LoadInternal()
         {
             if (_isLoaded)

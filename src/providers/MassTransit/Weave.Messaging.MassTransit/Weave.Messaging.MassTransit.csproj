@@ -13,7 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\..\Weave.Messaging.Debug.UseCases\Weave.Messaging.Debug.UseCases.csproj" />
         <ProjectReference Include="..\..\..\Weave.Messaging.Core\Weave.Messaging.Core.csproj" />
     </ItemGroup>
 

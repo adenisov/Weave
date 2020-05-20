@@ -1,10 +1,10 @@
 using System;
+using System.Collections.Generic;
 using Weave.Messaging.Core;
 using Weave.Messaging.Core.Commands;
 using Weave.Messaging.Core.Events;
 using Weave.Messaging.Core.Queries;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using MassTransit;
 
 namespace Weave.Messaging.MassTransit
@@ -12,10 +12,12 @@ namespace Weave.Messaging.MassTransit
     public sealed class MassTransitMessageBus : IMassTransitMessageBus
     {
         private readonly IBusControl _bus;
+        private readonly IEnumerable<IMessageBusBehavior> _busBehaviors;
 
-        public MassTransitMessageBus([NotNull] IBusControl bus)
+        public MassTransitMessageBus(IBusControl bus, IEnumerable<IMessageBusBehavior> busBehaviors)
         {
             _bus = bus;
+            _busBehaviors = busBehaviors;
         }
 
         public async Task<TResponse> RequestAsync<TRequest, TResponse>(
@@ -27,12 +29,14 @@ namespace Weave.Messaging.MassTransit
 
             void ConfigurationCallback(SendContext<TRequest> context)
             {
-                context.MessageId = config.Headers.MessageId;
-                context.CorrelationId = config.Headers.CorrelationId;
+                foreach (var behavior in _busBehaviors)
+                {
+                    behavior.HandleRequest(query, context, config);
+                }
             }
 
             var response = await _bus
-                .Request<TRequest, TResponse>((TRequest) query, config.CancellationToken, RequestTimeout.None, ConfigurationCallback)
+                .Request<TRequest, TResponse>((TRequest) query, config.CancellationToken, callback: ConfigurationCallback)
                 .ConfigureAwait(false);
 
             return response.Message;
@@ -45,8 +49,10 @@ namespace Weave.Messaging.MassTransit
 
             void ConfigurationCallback(SendContext<TRequest> context)
             {
-                context.MessageId = config.Headers.MessageId;
-                context.CorrelationId = config.Headers.CorrelationId;
+                foreach (var behavior in _busBehaviors)
+                {
+                    behavior.HandleSend(command, context, config);
+                }
             }
 
             await _bus.Send((TRequest) command, ConfigurationCallback, config.CancellationToken).ConfigureAwait(false);
@@ -61,12 +67,14 @@ namespace Weave.Messaging.MassTransit
 
             void ConfigurationCallback(SendContext<TRequest> context)
             {
-                context.MessageId = config.Headers.MessageId;
-                context.CorrelationId = config.Headers.CorrelationId;
+                foreach (var behavior in _busBehaviors)
+                {
+                    behavior.HandleSendWithResult(command, context, config);
+                }
             }
 
             var response = await _bus
-                .Request<TRequest, TResponse>((TRequest) command, config.CancellationToken, RequestTimeout.Default, ConfigurationCallback)
+                .Request<TRequest, TResponse>((TRequest) command, config.CancellationToken, callback: ConfigurationCallback)
                 .ConfigureAwait(false);
 
             return response.Message;
@@ -79,11 +87,13 @@ namespace Weave.Messaging.MassTransit
 
             void ConfigurationCallback(PublishContext<TEvent> context)
             {
-                context.MessageId = config.Headers.MessageId;
-                context.CorrelationId = config.Headers.CorrelationId;
+                foreach (var behavior in _busBehaviors)
+                {
+                    behavior.HandlePublish(@event, context, config);
+                }
             }
 
-            await _bus.Publish<TEvent>(@event, ConfigurationCallback, config.CancellationToken).ConfigureAwait(false);
+            await _bus.Publish((TEvent) @event, ConfigurationCallback, config.CancellationToken).ConfigureAwait(false);
         }
     }
 }

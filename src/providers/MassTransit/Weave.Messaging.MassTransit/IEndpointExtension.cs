@@ -1,3 +1,4 @@
+using System;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit
@@ -5,7 +6,7 @@ namespace Weave.Messaging.MassTransit
     /// <summary>
     ///
     /// </summary>
-    public interface IEndpointExtension
+    public interface IEndpointExtension : IDisposable
     {
         /// <summary>
         /// 

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Weave.Messaging.Core;
+using Weave.Messaging.MassTransit.Consumers.Behaviors;
 
 namespace Weave.Messaging.MassTransit.Consumers
 {

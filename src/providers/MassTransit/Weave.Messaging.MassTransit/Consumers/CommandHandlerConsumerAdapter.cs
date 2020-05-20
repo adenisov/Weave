@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Weave.Messaging.Core;
 using Weave.Messaging.Core.Commands;
+using Weave.Messaging.MassTransit.Consumers.Behaviors;
 
 namespace Weave.Messaging.MassTransit.Consumers
 {
@@ -20,7 +21,7 @@ namespace Weave.Messaging.MassTransit.Consumers
 
         protected override async Task HandleVoidResponseAsync(TRequest request, CancellationToken ct)
         {
-            await _commandHandler.HandleAsync(request, ct).DropContext();
+            await _commandHandler.HandleAsync(request, ct).ConfigureAwait(false);
         }
     }
 
@@ -39,7 +40,7 @@ namespace Weave.Messaging.MassTransit.Consumers
 
         protected override async Task<TResponse> HandleInternalAsync(TRequest request, CancellationToken ct)
         {
-            return await _commandHandler.HandleAsync(request, ct).DropContext();
+            return await _commandHandler.HandleAsync(request, ct).ConfigureAwait(false);
         }
     }
 }
