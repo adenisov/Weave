@@ -5,6 +5,7 @@ using Weave.Messaging.Core.Commands;
 using Weave.Messaging.Core.Events;
 using Weave.Messaging.Core.Queries;
 using System.Threading.Tasks;
+using GreenPipes;
 using MassTransit;
 
 namespace Weave.Messaging.MassTransit
@@ -12,12 +13,17 @@ namespace Weave.Messaging.MassTransit
     public sealed class MassTransitMessageBus : IMassTransitMessageBus
     {
         private readonly IBusControl _bus;
+        private readonly Lazy<IMessageSendUriProvider> _messageSendUriProvider;
         private readonly IEnumerable<IMessageBusBehavior> _busBehaviors;
 
-        public MassTransitMessageBus(IBusControl bus, IEnumerable<IMessageBusBehavior> busBehaviors)
+        public MassTransitMessageBus(
+            IBusControl bus,
+            IEnumerable<IMessageBusBehavior> busBehaviors,
+            Lazy<IMessageSendUriProvider> messageSendUriProvider)
         {
             _bus = bus;
             _busBehaviors = busBehaviors;
+            _messageSendUriProvider = messageSendUriProvider;
         }
 
         public async Task<TResponse> RequestAsync<TRequest, TResponse>(
@@ -55,7 +61,14 @@ namespace Weave.Messaging.MassTransit
                 }
             }
 
-            await _bus.Send((TRequest) command, ConfigurationCallback, config.CancellationToken).ConfigureAwait(false);
+            var sendEndpoint = await _bus.GetSendEndpoint(_messageSendUriProvider.Value.GetSendUri<TRequest>())
+                .ConfigureAwait(false);
+
+            await sendEndpoint.Send(
+                    (TRequest) command,
+                    Pipe.Execute<SendContext<TRequest>>(ConfigurationCallback),
+                    config.CancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task<TResponse> SendAsync<TRequest, TResponse>(

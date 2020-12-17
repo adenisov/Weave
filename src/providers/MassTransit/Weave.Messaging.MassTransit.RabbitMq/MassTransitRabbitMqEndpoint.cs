@@ -5,8 +5,8 @@ namespace Weave.Messaging.MassTransit.RabbitMq
 {
     public sealed class MassTransitRabbitMqEndpoint : MassTransitEndpointBase
     {
-        public MassTransitRabbitMqEndpoint(params IEndpointExtension[] extensions)
-            : base(extensions)
+        public MassTransitRabbitMqEndpoint(IContainerConfigurator containerConfigurator, params IEndpointExtension[] extensions)
+            : base(containerConfigurator, extensions)
         {
         }
 

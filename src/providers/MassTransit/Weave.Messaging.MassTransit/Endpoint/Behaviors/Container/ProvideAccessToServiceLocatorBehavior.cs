@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using GreenPipes;
 using MassTransit;
@@ -9,7 +10,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
 {
     internal sealed class ProvideAccessToServiceLocatorBehavior : IEndpointBehavior
     {
-        private Func<IServiceFactory> _serviceFactory;
+        private Func<ConsumeContext, IServiceFactory> _serviceFactory;
 
         public void Attach(IMassTransitEndpointLifecycle endpointLifecycle)
         {
@@ -17,38 +18,34 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors.Container
             endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
         }
 
-        private void OnServiceFactoryConfigured(object sender, ServiceFactoryConfiguredEventArgs e)
-        {
+        private void OnServiceFactoryConfigured(object sender, ServiceFactoryConfiguredEventArgs e) =>
             _serviceFactory = e.ServiceFactoryProvider;
-        }
 
-        private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e)
+        private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e) =>
+            e.Configurator.UseFilter(new ServiceLocatorInjector(_serviceFactory));
+
+        private sealed class ServiceLocatorInjector : IFilter<ConsumeContext>
         {
-            e.Configurator.UseFilter(new ServiceFactoryInjector(_serviceFactory));
-        }
+            private readonly Func<ConsumeContext, IServiceFactory> _serviceFactory;
 
-        private sealed class ServiceFactoryInjector : IFilter<ConsumeContext>
-        {
-            private readonly Func<IServiceFactory> _serviceFactory;
-
-            public ServiceFactoryInjector(Func<IServiceFactory> serviceFactory)
+            public ServiceLocatorInjector(Func<ConsumeContext, IServiceFactory> serviceFactory)
             {
                 _serviceFactory = serviceFactory;
             }
 
-            public Task Send(ConsumeContext context, IPipe<ConsumeContext> next)
+            [SuppressMessage("ReSharper", "AccessToDisposedClosure")]
+            public async Task Send(ConsumeContext context, IPipe<ConsumeContext> next)
             {
+                using var serviceFactory = _serviceFactory(context);
+
                 context.AddOrUpdatePayload(
-                    () => _serviceFactory(),
-                    existing => existing ?? _serviceFactory());
+                    () => serviceFactory,
+                    existing => existing ?? serviceFactory);
 
-                return next.Send(context);
+                await next.Send(context).ConfigureAwait(false);
             }
 
-            public void Probe(ProbeContext context)
-            {
-                context.Add("provider", "weave");
-            }
+            public void Probe(ProbeContext context) => context.CreateScope("serviceLocator");
         }
     }
 }

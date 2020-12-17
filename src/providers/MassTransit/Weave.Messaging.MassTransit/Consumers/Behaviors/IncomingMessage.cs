@@ -1,8 +1,9 @@
+using System;
 using Weave.Messaging.Core;
 
 namespace Weave.Messaging.MassTransit.Consumers.Behaviors
 {
-    internal sealed class IncomingMessage<TRequest> : IIncomingMessage<TRequest>
+    public sealed class IncomingMessage<TRequest> : IIncomingMessage<TRequest>
         where TRequest : class
     {
         /// <summary>
@@ -12,8 +13,8 @@ namespace Weave.Messaging.MassTransit.Consumers.Behaviors
         /// <param name="headers"></param>
         public IncomingMessage(MessageHeaders headers, TRequest body)
         {
-            Headers = headers;
-            Body = body;
+            Headers = headers ?? throw new ArgumentNullException(nameof(headers));
+            Body = body ?? throw new ArgumentNullException(nameof(body));
         }
 
         public MessageHeaders Headers { get; }

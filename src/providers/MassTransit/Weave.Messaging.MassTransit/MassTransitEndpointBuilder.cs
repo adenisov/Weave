@@ -14,7 +14,7 @@ namespace Weave.Messaging.MassTransit
             _customExtensions = new HashSet<IEndpointExtension>();
         }
 
-        protected IReadOnlyCollection<IEndpointExtension> CustomExtensions => _customExtensions.ToImmutableHashSet();
+        protected IEnumerable<IEndpointExtension> CustomExtensions => _customExtensions.ToImmutableHashSet();
         protected IContainerConfigurator ContainerConfigurator;
 
         protected virtual void Validate()

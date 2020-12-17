@@ -8,14 +8,17 @@ namespace Weave.Messaging.MassTransit.Autofac
     /// <summary>
     /// 
     /// </summary>
-    internal sealed class AutofacServiceFactory : IServiceFactory
+    internal sealed class AutofacServiceFactory : IServiceFactory, ILifetimeScopeContext
     {
         private readonly ILifetimeScope _lifetimeScope;
 
         public AutofacServiceFactory(ILifetimeScope lifetimeScope)
         {
             _lifetimeScope = lifetimeScope;
+            _lifetimeScope.Disposer.AddInstanceForDisposal(this);
         }
+
+        ILifetimeScope ILifetimeScopeContext.LifetimeScope => _lifetimeScope;
 
         public T GetService<T>(string name = "")
         {
@@ -25,6 +28,7 @@ namespace Weave.Messaging.MassTransit.Autofac
         public object GetService(Type type) => _lifetimeScope.Resolve(type);
 
         public IEnumerable<T> GetServices<T>() => _lifetimeScope.Resolve<IEnumerable<T>>();
+
 
         public void Dispose() => _lifetimeScope?.Dispose();
     }

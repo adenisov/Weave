@@ -7,7 +7,6 @@
     <ItemGroup>
         <PackageReference Include="MassTransit" Version="$(MassTransitVersion)" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="$(MassTransitVersion)" />
-        <PackageReference Include="MassTransit.Automatonymous" Version="$(MassTransitVersion)" />
     </ItemGroup>
     
     <ItemGroup>

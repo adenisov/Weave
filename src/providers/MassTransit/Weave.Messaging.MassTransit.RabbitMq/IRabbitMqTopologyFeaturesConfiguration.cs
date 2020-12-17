@@ -9,7 +9,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         /// 
         /// </summary>
         InputSettings DirectInputSettings { get; }
-        
+
         /// <summary>
         /// 
         /// </summary>

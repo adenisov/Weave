@@ -26,6 +26,29 @@ namespace Weave.Messaging.MassTransit.Autofac
                 throw new ArgumentNullException(nameof(registration));
             }
 
+            var tags = new[] { "message" }.Concat(lifetimeScopeTags).ToArray();
+            return registration.InstancePerMatchingLifetimeScope(tags);
+        }
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="registration"></param>
+        /// <param name="lifetimeScopeTags"></param>
+        /// <typeparam name="TLimit"></typeparam>
+        /// <typeparam name="TActivatorData"></typeparam>
+        /// <typeparam name="TStyle"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static IRegistrationBuilder<TLimit, TActivatorData, TStyle> InstancePerPipe<TLimit, TActivatorData, TStyle>(
+            this IRegistrationBuilder<TLimit, TActivatorData, TStyle> registration,
+            params object[] lifetimeScopeTags)
+        {
+            if (registration == null)
+            {
+                throw new ArgumentNullException(nameof(registration));
+            }
+
             var tags = new[] { AutofacContainerConfigurator.ScopeName }.Concat(lifetimeScopeTags).ToArray();
             return registration.InstancePerMatchingLifetimeScope(tags);
         }

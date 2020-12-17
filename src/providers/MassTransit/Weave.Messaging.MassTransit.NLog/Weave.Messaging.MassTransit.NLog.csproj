@@ -5,7 +5,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MassTransit.NLog" Version="$(MassTransitVersion)" />
+      <PackageReference Include="MassTransit.NLog" Version="5.5.6" />
+      <PackageReference Include="NLog" Version="4.7.2" />
     </ItemGroup>
     
     <ItemGroup>

@@ -9,4 +9,8 @@
       <ProjectReference Include="..\Weave.Messaging.MassTransit\Weave.Messaging.MassTransit.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="8.6.2" />
+    </ItemGroup>
+
 </Project>

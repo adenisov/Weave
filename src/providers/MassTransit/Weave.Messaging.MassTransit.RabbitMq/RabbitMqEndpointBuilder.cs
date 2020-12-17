@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Weave.Messaging.MassTransit.RabbitMq.Extensions;
+using Weave.Messaging.MassTransit.RabbitMq.Extensions.Sagas;
 
 namespace Weave.Messaging.MassTransit.RabbitMq
 {
@@ -89,10 +90,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq
 
             extensions.AddRange(CustomExtensions);
 
-            var endpoint = new MassTransitRabbitMqEndpoint(extensions.ToArray());
-            endpoint.ConfigureContainer(ContainerConfigurator);
-
-            return endpoint;
+            return new MassTransitRabbitMqEndpoint(ContainerConfigurator, extensions.ToArray());
         }
     }
 }

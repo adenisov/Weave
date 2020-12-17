@@ -5,10 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Autofac" Version="4.9.4" />
         <PackageReference Include="MassTransit" Version="$(MassTransitVersion)" />
-        <PackageReference Include="MassTransit.Automatonymous" Version="$(MassTransitVersion)" />
-        <PackageReference Include="MassTransit.RabbitMQ" Version="$(MassTransitVersion)" />
         <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
     </ItemGroup>
 

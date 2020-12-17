@@ -18,16 +18,18 @@ namespace Weave.Messaging.MassTransit
     {
         private readonly IMassTransitEndpointLifecycle _lifecycle;
         private readonly IEndpointExtension[] _extensions;
+        private readonly IContainerConfigurator _containerConfigurator;
 
         private IBusControl _busControl;
         private IMassTransitMessageBus _messageBus;
-        private IContainerConfigurator _containerConfigurator;
         private IContainerRegistration _containerRegistration;
-        private Func<IServiceFactory> _serviceFactoryProvider;
+        private Func<ConsumeContext, IServiceFactory> _serviceFactoryProvider;
 
-        protected MassTransitEndpointBase(params IEndpointExtension[] extensions)
+        protected MassTransitEndpointBase(IContainerConfigurator containerConfigurator, params IEndpointExtension[] extensions)
         {
+            _containerConfigurator = containerConfigurator;
             _extensions = extensions;
+            
             _lifecycle = new MassTransitEndpointLifecycle();
 
             AttachBehaviors();
@@ -35,6 +37,7 @@ namespace Weave.Messaging.MassTransit
         }
 
         protected abstract Func<IBusControl> GetConfigureFactory(Action<IBusFactoryConfigurator> configurator);
+
 
         public void RegisterQueryHandler<THandler>() where THandler : IQueryHandler
         {
@@ -74,17 +77,6 @@ namespace Weave.Messaging.MassTransit
             RegisterMessagingModule(new TModule());
         }
 
-        public void ConfigureContainer(IContainerConfigurator configurator)
-        {
-            _containerConfigurator = configurator;
-
-            _serviceFactoryProvider = _containerConfigurator.ServiceFactoryProvider;
-            _lifecycle.EmitServiceFactoryConfigured(_serviceFactoryProvider);
-
-            _containerRegistration = _containerConfigurator.ContainerRegistration;
-            _lifecycle.EmitContainerProvided(_ => _.Register(_containerRegistration));
-        }
-
         public void Configure(Action<IBusFactoryConfigurator> preConfigure = null, Action<IBusFactoryConfigurator> postConfigure = null)
         {
             void ConfigurationAction(IBusFactoryConfigurator configurator)
@@ -95,6 +87,7 @@ namespace Weave.Messaging.MassTransit
                 _lifecycle.EmitMessageBusConfigured();
             }
 
+            ConfigureContainer();
             _containerConfigurator.Configure(GetConfigureFactory(ConfigurationAction));
         }
 
@@ -105,7 +98,7 @@ namespace Weave.Messaging.MassTransit
                 throw new InvalidOperationException("message bus has been already created.");
             }
 
-            var serviceFactory = _serviceFactoryProvider();
+            var serviceFactory = _serviceFactoryProvider(null);
             _busControl = serviceFactory.GetService<IBusControl>();
 
             if (_busControl == null)
@@ -129,11 +122,20 @@ namespace Weave.Messaging.MassTransit
             return _messageBus;
         }
 
+        private void ConfigureContainer()
+        {
+            _serviceFactoryProvider = _containerConfigurator.ServiceFactoryProvider;
+            _lifecycle.EmitServiceFactoryConfigured(_serviceFactoryProvider);
+
+            _containerRegistration = _containerConfigurator.ContainerRegistration;
+            _lifecycle.EmitContainerProvided(_ => _.Register(_containerRegistration));
+        }
+
         private void AttachBehaviors()
         {
-            foreach (var endpointBehavior in _defaultBehaviorSet)
+            foreach (var behavior in _defaultBehaviorSet)
             {
-                endpointBehavior.Attach(_lifecycle);
+                behavior.Attach(_lifecycle);
             }
         }
 
@@ -147,14 +149,15 @@ namespace Weave.Messaging.MassTransit
 
         private readonly IEndpointBehavior[] _defaultBehaviorSet =
         {
+            new ProvideAccessToServiceLocatorBehavior(),
             new RegisterMessageHandlersInContainer(),
-            new RegisterEntityFormatter(t => MessageUrn.ForType(t).ToString()),
+            new RegisterSagasInContainer(),
+            new RegisterEntityFormatter(),
             new ConfigureParallelOptionsBehavior(),
             new ConfigureSerializationBehavior(),
             new ExecuteHandlersInTransactionBehavior(),
-            new ProvideAccessToServiceLocatorBehavior(),
-            new MessageRetryBehavior(),
-            new MessageRedeliveryBehavior(),
+            // new MessageRetryBehavior(),
+            // new MessageRedeliveryBehavior(),
             new RegisterMessageBusBehaviors(new ConfigurePredefinedMessageHeaders()),
         };
 
@@ -169,13 +172,16 @@ namespace Weave.Messaging.MassTransit
         private void ShutdownMessageBus()
         {
             _lifecycle.EmitMessageBusStopping();
-            _busControl?.Stop();
+
+            ShutdownExtensions();
+            _busControl?.Stop(TimeSpan.FromSeconds(10));
+
             _lifecycle.EmitMessageBusStopped();
+            _containerConfigurator?.Dispose();
         }
 
         public void Dispose()
         {
-            ShutdownExtensions();
             ShutdownMessageBus();
             GC.SuppressFinalize(this);
         }

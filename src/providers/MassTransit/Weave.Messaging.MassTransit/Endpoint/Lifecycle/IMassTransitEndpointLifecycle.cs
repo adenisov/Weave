@@ -28,6 +28,11 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         /// <summary>
         /// 
         /// </summary>
+        event EventHandler<MessageHandlerRegisteredEventArgs> MessageHandlerRegistered; 
+
+        /// <summary>
+        /// 
+        /// </summary>
         event EventHandler<SagaRegisteredEventArgs> SagaRegistered; 
 
         /// <summary>
@@ -44,11 +49,6 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         /// 
         /// </summary>
         event EventHandler<MessageBusConfiguringEventArgs> MessageBusConfiguring;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        event EventHandler<MessageBusTransportConfiguredEventArgs> MessageBusTransportConfigured; 
 
         /// <summary>
         /// 
@@ -80,13 +80,6 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         /// </summary>
         /// <param name="configurator"></param>
         void EmitMessageBusConfiguring(IBusFactoryConfigurator configurator);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="host"></param>
-        /// <param name="configurator"></param>
-        void EmitMessageBusTransportConfigured(IHost host, IBusFactoryConfigurator configurator);
 
         /// <summary>
         /// 
@@ -143,7 +136,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Lifecycle
         /// 
         /// </summary>
         /// <param name="serviceFactoryProvider"></param>
-        void EmitServiceFactoryConfigured(Func<IServiceFactory> serviceFactoryProvider);
+        void EmitServiceFactoryConfigured(Func<ConsumeContext, IServiceFactory> serviceFactoryProvider);
 
         /// <summary>
         /// 

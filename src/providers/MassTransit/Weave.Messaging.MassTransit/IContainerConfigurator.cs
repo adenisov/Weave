@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 using MassTransit;
 using Weave.Messaging.MassTransit.Endpoint.Behaviors.Container;
 
@@ -7,19 +8,18 @@ namespace Weave.Messaging.MassTransit
     /// <summary>
     /// 
     /// </summary>
-    public interface IContainerConfigurator
+    public interface IContainerConfigurator : IDisposable
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="busConfigureFactory"></param>
-        void Configure(Func<IBusControl> busConfigureFactory);
+        void Configure([NotNull] Func<IBusControl> busConfigureFactory);
 
         /// <summary>
         /// 
         /// </summary>
-        /// <value></value>
-        Func<IServiceFactory> ServiceFactoryProvider { get; }
+        Func<ConsumeContext, IServiceFactory> ServiceFactoryProvider { get; }
 
         /// <summary>
         /// 

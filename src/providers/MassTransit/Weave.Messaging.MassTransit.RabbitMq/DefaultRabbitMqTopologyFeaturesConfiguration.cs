@@ -8,7 +8,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         {
             AutoDelete = true,
             Durable = false,
-            BindMessageExchanges = true,
+            ConfigureConsumeTopology = true,
             Ttl = TimeSpan.FromMinutes(1),
             PrefetchCount = Environment.ProcessorCount * 10,
         };
@@ -17,7 +17,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         {
             AutoDelete = false,
             Durable = true,
-            BindMessageExchanges = false,
+            ConfigureConsumeTopology = false,
             PrefetchCount = Environment.ProcessorCount * 10,
         };
     }

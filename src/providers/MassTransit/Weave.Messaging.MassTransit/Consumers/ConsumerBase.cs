@@ -44,16 +44,15 @@ namespace Weave.Messaging.MassTransit.Consumers
             var headers = new MessageHeaders();
             ExtractHeaders(headers, context);
 
+            Task<TResponse> Handler() => HandleInternalAsync(message, context.CancellationToken);
+
             var incomingMessage = new IncomingMessage<TRequest>(headers, message);
-
-            Task<TResponse> Handler() => HandleInternalAsync(incomingMessage.Body, context.CancellationToken);
-
             var response = await _behaviors
                 .Reverse()
                 .Aggregate(
                     (Func<Task<TResponse>>) Handler,
                     (next, pipeline) => () =>
-                        pipeline.HandleAsync(incomingMessage, next))()
+                        pipeline.HandleAsync(incomingMessage, context.CancellationToken, next))()
                 .ConfigureAwait(false);
 
             if (response != VoidResponse.Value)

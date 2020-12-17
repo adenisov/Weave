@@ -1,4 +1,3 @@
-using System;
 using MassTransit;
 using MassTransit.RabbitMqTransport;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
@@ -6,7 +5,7 @@ using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 
 namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
 {
-    public sealed class RegisterRabbitMqTransportExtension : IEndpointExtension
+    internal sealed class RegisterRabbitMqTransportExtension : IEndpointExtension
     {
         private readonly RabbitMqHostSettings _rabbitMqHostSettings;
 
@@ -18,14 +17,13 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         public void Attach(IMassTransitEndpointLifecycle endpointLifecycle)
         {
             endpointLifecycle.MessageBusConfiguring += (sender, args) =>
-                OnMessageBusConfiguring(host =>
-                    endpointLifecycle.EmitMessageBusTransportConfigured(host, args.Configurator), args);
+                OnMessageBusConfiguring(args);
         }
 
-        private void OnMessageBusConfiguring(Action<IHost> hostEmitter, MessageBusConfiguringEventArgs e) =>
-            hostEmitter(CreateHost((IRabbitMqBusFactoryConfigurator) e.Configurator, _rabbitMqHostSettings));
+        private void OnMessageBusConfiguring(MessageBusConfiguringEventArgs e) =>
+            CreateHost((IRabbitMqBusFactoryConfigurator) e.Configurator, _rabbitMqHostSettings);
 
-        private static IRabbitMqHost CreateHost(IRabbitMqBusFactoryConfigurator configurator, RabbitMqHostSettings hostSettings) =>
+        private static void CreateHost(IRabbitMqBusFactoryConfigurator configurator, RabbitMqHostSettings hostSettings) =>
             configurator.Host(
                 hostSettings.Host,
                 (ushort) hostSettings.Port,

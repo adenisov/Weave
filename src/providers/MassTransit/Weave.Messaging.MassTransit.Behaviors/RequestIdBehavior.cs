@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Weave.Messaging.MassTransit.Consumers.Behaviors;
 
@@ -14,7 +15,7 @@ namespace Weave.Messaging.MassTransit.Behaviors
         where TRequest : class
         where TResponse : class
     {
-        public async Task<TResponse> HandleAsync(IIncomingMessage<TRequest> message, Func<Task<TResponse>> next)
+        public async Task<TResponse> HandleAsync(IIncomingMessage<TRequest> message, CancellationToken ct, Func<Task<TResponse>> next)
         {
             try
             {
@@ -22,7 +23,7 @@ namespace Weave.Messaging.MassTransit.Behaviors
 
                 Trace.CorrelationManager.StartLogicalOperation(requestId);
                 Trace.CorrelationManager.ActivityId = requestId;
-                
+
                 return await next().ConfigureAwait(false);
             }
             finally

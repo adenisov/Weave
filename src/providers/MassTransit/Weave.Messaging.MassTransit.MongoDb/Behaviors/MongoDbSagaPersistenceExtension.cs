@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using MassTransit.MongoDbIntegration.Saga;
 using MassTransit.MongoDbIntegration.Saga.Context;
 using MongoDB.Driver;
@@ -10,9 +12,8 @@ namespace Weave.Messaging.MassTransit.MongoDb.Behaviors
 {
     public sealed class MongoDbSagaPersistenceExtension : IEndpointExtension
     {
+        private readonly ISet<Type> _sagaTypes = new HashSet<Type>();
         private readonly MongoDbHostSettings _mongoDbHostSettings;
-
-        private ContainerRegistar _containerRegistar;
 
         public MongoDbSagaPersistenceExtension(MongoDbHostSettings mongoDbHostSettings)
         {
@@ -27,25 +28,27 @@ namespace Weave.Messaging.MassTransit.MongoDb.Behaviors
 
         private void OnContainerRegistered(object sender, ContainerRegisteredEventArgs e)
         {
-            _containerRegistar = e.Registar;
-
             var mongoDatabase = GetMongoDatabase();
-            _containerRegistar(InstanceRegistrationBuilder<IMongoDatabase>
+            e.Registar(InstanceRegistrationBuilder<IMongoDatabase>
                 .FromInstance(mongoDatabase));
 
-            _containerRegistar(RegistrationBuilder
+            /* ToDo: breaking change
+            e.Registar(RegistrationBuilder
                 .RegisterType<MongoDbSagaConsumeContextFactory>()
                 .As<IMongoDbSagaConsumeContextFactory>()
                 .Singleton());
+            */
+
+            foreach (var sagaType in _sagaTypes)
+            {
+                var sagaRepositoryType = typeof(MongoDbSagaRepository<>).MakeGenericType(sagaType.GetSagaDataType());
+                e.Registar(
+                    RegistrationBuilder
+                        .RegisterType(sagaRepositoryType));
+            }
         }
 
-        private void OnSagaRegistered(object sender, SagaRegisteredEventArgs e)
-        {
-            var sagaRepository = typeof(MongoDbSagaRepository<>).MakeGenericType(e.SagaType.GetSagaDataType());
-            _containerRegistar(
-                RegistrationBuilder
-                    .RegisterType(sagaRepository));
-        }
+        private void OnSagaRegistered(object sender, SagaRegisteredEventArgs e) => _sagaTypes.Add(e.SagaType);
 
         private IMongoDatabase GetMongoDatabase()
         {

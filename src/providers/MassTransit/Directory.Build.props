@@ -1,5 +1,5 @@
 <Project>
     <PropertyGroup>
-        <MassTransitVersion>5.5.6</MassTransitVersion>
+        <MassTransitVersion>6.3.2</MassTransitVersion>
     </PropertyGroup>
 </Project>

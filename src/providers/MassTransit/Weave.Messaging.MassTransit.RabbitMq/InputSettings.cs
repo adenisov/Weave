@@ -17,7 +17,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq
         /// <summary>
         /// 
         /// </summary>
-        public bool BindMessageExchanges { get; set; }
+        public bool ConfigureConsumeTopology { get; set; }
         
         /// <summary>
         /// 

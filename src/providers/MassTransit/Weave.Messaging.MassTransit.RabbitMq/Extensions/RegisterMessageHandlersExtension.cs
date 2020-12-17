@@ -12,7 +12,7 @@ using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
 
 namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
 {
-    public sealed class RegisterMessageHandlersExtension : IEndpointExtension
+    internal sealed class RegisterMessageHandlersExtension : IEndpointExtension
     {
         private sealed class RegisteredMessageHandler
         {
@@ -41,7 +41,6 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
         private readonly ICollection<RegisteredMessageHandler> _registeredCommandHandlers = new HashSet<RegisteredMessageHandler>();
         private readonly ICollection<RegisteredMessageHandler> _registeredEventHandlers = new HashSet<RegisteredMessageHandler>();
 
-        private IRabbitMqHost _host;
         private IRabbitMqBusFactoryConfigurator _configurator;
         private ContainerRegistar _containerRegistar;
 
@@ -59,14 +58,7 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
             endpointLifecycle.CommandHandlerRegistered += OnCommandHandlerRegistered;
             endpointLifecycle.EventHandlerRegistered += OnEventHandlerRegistered;
             endpointLifecycle.ContainerRegistered += OnContainerRegistered;
-            endpointLifecycle.MessageBusTransportConfigured += OnMessageBusTransportConfigured;
             endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
-        }
-
-        private void OnMessageBusTransportConfigured(object sender, MessageBusTransportConfiguredEventArgs e)
-        {
-            _configurator = (IRabbitMqBusFactoryConfigurator) e.Configurator;
-            _host = (IRabbitMqHost) e.Host;
         }
 
         private void OnContainerRegistered(object sender, ContainerRegisteredEventArgs e)
@@ -76,6 +68,8 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
 
         private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e)
         {
+            _configurator = (IRabbitMqBusFactoryConfigurator) e.Configurator;
+
             RegisterQueryHandlers(_registeredQueryHandlers);
             RegisterCommandHandlers(_registeredCommandHandlers);
             RegisterEventHandlers(_registeredEventHandlers);
@@ -150,15 +144,15 @@ namespace Weave.Messaging.MassTransit.RabbitMq.Extensions
             where TConsumer : class, IConsumer
         {
             var messageType = handler.MessageType;
-
+            
             _configurator.ReceiveEndpoint(
-                _host,
                 _rabbitMqTopology.GetLocalInputQueueName(messageType),
                 c =>
                 {
+                    
                     c.AutoDelete = inputSettings.AutoDelete;
                     c.Durable = inputSettings.Durable;
-                    c.BindMessageExchanges = inputSettings.BindMessageExchanges;
+                    c.ConfigureConsumeTopology = inputSettings.ConfigureConsumeTopology;
                     c.QueueExpiration = inputSettings.Ttl;
                     c.PrefetchCount = (ushort) inputSettings.PrefetchCount;
                     c.PurgeOnStartup = inputSettings.PurgeOnStartup;

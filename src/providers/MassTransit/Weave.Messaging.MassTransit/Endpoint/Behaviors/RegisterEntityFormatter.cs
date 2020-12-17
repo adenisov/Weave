@@ -1,4 +1,5 @@
 using System;
+using MassTransit;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle.Events;
 using MassTransit.Topology;
 using Weave.Messaging.MassTransit.Endpoint.Lifecycle;
@@ -7,20 +8,14 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
 {
     internal sealed class RegisterEntityFormatter : IEndpointBehavior
     {
-        private readonly Func<Type, string> _entityFormatter;
-
-        public RegisterEntityFormatter(Func<Type, string> entityFormatter)
-        {
-            _entityFormatter = entityFormatter;
-        }
-
         public void Attach(IMassTransitEndpointLifecycle endpointLifecycle)
         {
             endpointLifecycle.MessageBusConfiguring += OnMessageBusConfiguring;
         }
 
-        private void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e) =>
-            e.Configurator.MessageTopology.SetEntityNameFormatter(new InlineEntityFormatter(_entityFormatter));
+        private static void OnMessageBusConfiguring(object sender, MessageBusConfiguringEventArgs e) =>
+            e.Configurator.MessageTopology.SetEntityNameFormatter(
+                new InlineEntityFormatter(t => MessageUrn.ForType(t).ToString()));
 
         private sealed class InlineEntityFormatter : IEntityNameFormatter
         {
@@ -28,7 +23,7 @@ namespace Weave.Messaging.MassTransit.Endpoint.Behaviors
 
             public InlineEntityFormatter(Func<Type, string> formatFunc)
             {
-                _formatFunc = formatFunc;
+                _formatFunc = formatFunc ?? throw new ArgumentNullException(nameof(formatFunc));
             }
 
             public string FormatEntityName<T>() => _formatFunc(typeof(T));
