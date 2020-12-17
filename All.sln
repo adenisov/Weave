@@ -6,10 +6,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.Core", "src\Weave.Messaging.Core\Weave.Messaging.Core.csproj", "{A9070AA4-4943-4E51-8E14-34104496D2E4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{4E4F2659-FEFF-4A05-A4BF-9FF217221065}"
-ProjectSection(SolutionItems) = preProject
-	build\build.cake = build\build.cake
-	build\build.sh = build\build.sh
-EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "providers\Weave.Messaging.MassTransit", "src\providers\MassTransit\Weave.Messaging.MassTransit\Weave.Messaging.MassTransit.csproj", "{68A332AF-3519-4C68-8BF6-B27C5BDFF9FF}"
 EndProject
@@ -30,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.MassTransit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weave.Messaging.MassTransit.Behaviors", "src\providers\MassTransit\Weave.Messaging.MassTransit.Behaviors\Weave.Messaging.MassTransit.Behaviors.csproj", "{93EA0FBE-2B07-4984-B0DF-FE50B7AAC937}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{8E833CF0-45A0-4A48-91A4-F982E3BA1E25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,8 +43,11 @@ Global
 		{D641DA20-1BE6-4BEA-948B-3A54D28AD4F6} = {0FF73F11-2656-4405-AB9B-0F6F150A2E6E}
 		{13666C6D-9F06-43AE-9C07-E844A32F6077} = {0FF73F11-2656-4405-AB9B-0F6F150A2E6E}
 		{93EA0FBE-2B07-4984-B0DF-FE50B7AAC937} = {0FF73F11-2656-4405-AB9B-0F6F150A2E6E}
+		{8E833CF0-45A0-4A48-91A4-F982E3BA1E25} = {4E4F2659-FEFF-4A05-A4BF-9FF217221065}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8E833CF0-45A0-4A48-91A4-F982E3BA1E25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E833CF0-45A0-4A48-91A4-F982E3BA1E25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9070AA4-4943-4E51-8E14-34104496D2E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A9070AA4-4943-4E51-8E14-34104496D2E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9070AA4-4943-4E51-8E14-34104496D2E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
