@@ -2,15 +2,18 @@ using System.Linq;
 using GlobExpressions;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tools.DotNet;
+using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
+[AppVeyor(AppVeyorImage.VisualStudio2019)]
 [CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
 class Build : NukeBuild
@@ -22,6 +25,7 @@ class Build : NukeBuild
     [Parameter] readonly string NugetApiKey;
 
     [GitRepository] readonly GitRepository GitRepository;
+    [GitVersion(Framework = "netcoreapp3.1")] readonly GitVersion GitVersion;
 
     [Solution] readonly Solution Solution;
 
@@ -57,6 +61,7 @@ class Build : NukeBuild
 
     Target Pack => _ => _
         .DependsOn(Compile)
+        .Requires(() => Equals(Configuration, Configuration.Release))
         .Executes(() =>
         {
             Solution.GetProjects("Weave.*").ForEach(project =>
@@ -64,10 +69,12 @@ class Build : NukeBuild
                 DotNetPack(s => s
                     .SetProject(project)
                     .SetConfiguration(Configuration)
+                    .SetVersion(GitVersion.NuGetVersionV2)
                     .EnableNoBuild()
                     .EnableNoRestore()
                     .SetDescription(project.Name)
-                    .SetPackageTags(Solution.Name)
+                    .SetRepositoryUrl("https://github.com/adenisov/Weave")
+                    .SetAuthors("Andrew Denisov")
                     .SetNoDependencies(true)
                     .SetOutputDirectory(OutputDirectory / "nuget"));
             });
