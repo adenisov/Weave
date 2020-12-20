@@ -61,7 +61,7 @@ namespace Weave.Messaging.MassTransit.Autofac
         /// <param name="additionalModules"></param>
         /// <typeparam name="TBuilder"></typeparam>
         /// <returns></returns>
-        public static MassTransitEndpointBuilder<TBuilder> UseAutofac<TBuilder>(this MassTransitEndpointBuilder<TBuilder> builder,
+        public static TBuilder UseAutofac<TBuilder>(this TBuilder builder,
             ContainerBuilder containerBuilder,
             params Module[] additionalModules)
             where TBuilder : MassTransitEndpointBuilder<TBuilder>
@@ -77,7 +77,7 @@ namespace Weave.Messaging.MassTransit.Autofac
         /// <param name="additionalModules"></param>
         /// <typeparam name="TBuilder"></typeparam>
         /// <returns></returns>
-        public static MassTransitEndpointBuilder<TBuilder> UseAutofac<TBuilder>(this MassTransitEndpointBuilder<TBuilder> builder,
+        public static TBuilder UseAutofac<TBuilder>(this TBuilder builder,
             Action<ContainerBuilder> containerBuilderEmitter,
             params Module[] additionalModules)
             where TBuilder : MassTransitEndpointBuilder<TBuilder>

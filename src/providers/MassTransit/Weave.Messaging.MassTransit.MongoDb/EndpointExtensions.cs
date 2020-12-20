@@ -13,9 +13,7 @@ namespace Weave.Messaging.MassTransit.MongoDb
         /// <param name="configurator"></param>
         /// <typeparam name="TBuilder"></typeparam>
         /// <returns></returns>
-        public static MassTransitEndpointBuilder<TBuilder> StoreSagaInMongoDb<TBuilder>(
-            this MassTransitEndpointBuilder<TBuilder> builder,
-            Action<MongoDbHostSettings> configurator = null)
+        public static TBuilder StoreSagaInMongoDb<TBuilder>(this TBuilder builder, Action<MongoDbHostSettings> configurator = null)
             where TBuilder : MassTransitEndpointBuilder<TBuilder>
         {
             var mongoDbHostSettings = ConfigurationFactory.Configure(configurator);

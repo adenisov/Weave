@@ -11,12 +11,12 @@ namespace Weave.Messaging.MassTransit.NLog
         /// <param name="builder"></param>
         /// <typeparam name="TBuilder"></typeparam>
         /// <returns></returns>
-        public static MassTransitEndpointBuilder<TBuilder> UseNLog<TBuilder>(this MassTransitEndpointBuilder<TBuilder> builder)
+        public static TBuilder UseNLog<TBuilder>(this TBuilder builder)
             where TBuilder : MassTransitEndpointBuilder<TBuilder>
         {
             return builder.WithCustomExtension(new NLogEndpointExtension());
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -24,8 +24,7 @@ namespace Weave.Messaging.MassTransit.NLog
         /// <param name="logFactory"></param>
         /// <typeparam name="TBuilder"></typeparam>
         /// <returns></returns>
-        public static MassTransitEndpointBuilder<TBuilder> UseNLog<TBuilder>(
-            this MassTransitEndpointBuilder<TBuilder> builder, LogFactory logFactory)
+        public static TBuilder UseNLog<TBuilder>(this TBuilder builder, LogFactory logFactory)
             where TBuilder : MassTransitEndpointBuilder<TBuilder>
         {
             return builder.WithCustomExtension(new NLogEndpointExtension(logFactory));
